@@ -11,6 +11,7 @@ import cv2
 import math
 import tf
 import apriltag
+import time
 
 CAMERA_MATRIX = np.array([[503.038912, 0.00, 338.40326932],
  [0.00, 499.01230583, 239.41331672],
@@ -34,6 +35,10 @@ class TurtleBot:
         self.x = 0
         self.y = 0
         self.theta = 0
+        self.tag_id
+
+    def getTagID(self):
+        return self.tag_id
 
     def odom_callback(self, odom_data):
         self.odom = odom_data
@@ -63,8 +68,8 @@ class TurtleBot:
                 cv2.line(rotated_undistorted_frame, ptC, ptD, (0, 255, 0), 2)
                 cv2.line(rotated_undistorted_frame, ptD, ptA, (0, 255, 0), 2)
 
-                tag_id = result.tag_id
-                cv2.putText(rotated_undistorted_frame, f"ID: {tag_id}", (ptA[0], ptA[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                self.tag_id = result.tag_id
+                cv2.putText(rotated_undistorted_frame, f"ID: {self.tag_id}", (ptA[0], ptA[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
                 fx, fy, cx, cy = CAMERA_MATRIX[0, 0], CAMERA_MATRIX[1, 1], CAMERA_MATRIX[0, 2], CAMERA_MATRIX[1, 2]
                 pose, e0, e1 = detector.detection_pose(result, (fx, fy, cx, cy), TAG_SIZE)
@@ -140,12 +145,89 @@ class TurtleBot:
         self.set_speeds(0, 0, 0)
         self.publish_cmd_vel()
 
+class City:
+
+    rospy.init_node('city', anonymous=True)
+
+    def __innit__(self):
+        # Define the direction mapping for AprilTags
+        self.direction_map = {
+            0: "North", 1: "North", 2: "North",
+            3: "East",  4: "East",  5: "East",
+            6: "South", 7: "South", 8: "South",
+            9: "West", 10: "West", 11: "West"
+        }
+
+        # Define the street mapping for AprilTags
+        self.street_map = {
+            0: "1st Street", 8: "1st Street",
+            1: "2nd Street", 7: "2nd Street",
+            2: "3rd Street", 6: "3rd Street",
+            3: "4th Street", 11: "4th Street",
+            4: "5th Street", 10: "5th Street",
+            5: "6th Street", 9: "6th Street"
+        }
+
+        # Intersections dictionary about where you are based on the last 2 different April Tags
+        self.intersections = {
+            (0, 3): "Intersection 1",
+            (0, 4): "Intersection 2",
+            (0, 5): "Intersection 3",
+            (1, 3): "Intersection 4",
+            (1, 4): "Intersection 5",
+            (1, 5): "Intersection 6",
+            (2, 3): "Intersection 7",
+            (2, 4): "Intersection 8",
+            (2, 5): "Intersection 9",
+        }
+        self.lastTag = None
+        self.direction = None
+        self.street = None
+        self.lastIntersection = None
+        self.last2Tags = []
+
+        self.bot = TurtleBot()
+
+    def localize_april_tag(self):
+        tag_id = self.bot.getTagID()
+        self.tagId = tag_id
+        self.direction = self.direction_map.get(tag_id, "Unknown direction")
+        self.street = self.street_map.get(tag_id, "Unknown street")
+
+        # If the tag is different from the last one, update the last 2 tags
+        if (tag_id != self.lastTag and tag_id not in self.last2Tags):
+            self.last2Tags.append(tag_id)
+            # Keep only the last 2 tags
+            if len(self.last2Tags) > 2:
+                self.last2Tags.pop(0)
+            # If the last tag was detected more than 5 seconds ago, remove it
+            # This is to avoid having the same tag twice in the last 2 tags
+            # and to allow time to make a turn onto a new street
+            if time.time() - self.lastTime > 5 and len(self.last2Tags) == 2:
+                self.last2Tags.pop(0)
+            self.lastTag = tag_id
+            self.lastTime = time.time()
+
+        if len(self.last2Tags) == 2:
+            # Pass the last 2 tags to the street dictionary
+            # to get the street names of both tags and the intersection
+            street1 = self.street_map.get(self.last2Tags[0], "Unknown street")
+            street2 = self.street_map.get(self.last2Tags[1], "Unknown street")
+            intersection = self.intersections.get((street1, street2), "Unknown intersection")
+            self.lastIntersection = intersection
+            print(f"Tag ID: {self.tag_id} -> Direction: {self.direction}, Street: {self.street}, Intersection: {self.intersection}")
+
+        print(f"Tag ID: {self.tagId} -> Direction: {self.direction}, Street: {self.street}")
+
 if __name__ == '__main__':
     try:
-        bot = TurtleBot()
-        bot.go_to_position(0.7, 0)
-        bot.go_to_position(0.7, 0.6)
-        bot.go_to_position(0, 0.6)
-        bot.go_to_position(0, 0.9)
+        city = City()
+        while not rospy.is_shutdown():
+            city.localize_april_tag()
+            # city.bot.go_to_position(0.7, 0)
+            # city.bot.go_to_position(0.7, 0.6)
+            # city.bot.go_to_position(0, 0.6)
+            # city.bot.go_to_position(0, 0.9)
+            rospy.sleep(0.1)
     except rospy.ROSInterruptException:
         pass
