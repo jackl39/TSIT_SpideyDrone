@@ -17,7 +17,8 @@ import pandas as pd
 import os
 
 # Need to change this depending on your local directory of the dataset
-folder_dir = "C:/Users/61435/OneDrive/Documents/Personal/Convolutional Neural Network/SpiderManHerosVillainsDataSet/combinedDataSet"
+# folder_dir = "C:/Users/61435/OneDrive/Documents/Personal/Convolutional Neural Network/SpiderManHerosVillainsDataSet/combinedDataSet"
+folder_dir = "~/Documents/SpiderManHerosVillainsDataSet/combinedDataSet/"
 
 transform = transforms.Compose([
     transforms.Grayscale(), 

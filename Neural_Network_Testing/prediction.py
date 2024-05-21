@@ -42,32 +42,36 @@ def predict(image):
 
 # Function to capture image from webcam and make prediction
 def capture_and_predict():
-    # Initialize the webcam
-    webcam = cv2.VideoCapture(0)  # 0 for the default webcam, you can change it if you have multiple webcams
+    frame = cv2.imread("/home/jack/Documents/SpiderManHerosVillainsDataSet/combinedDataSet/venom_00018.jpg")
+    predicted_class = predict(frame)    
+    print("Predicted class:", predicted_class)
 
-    # Check if the webcam is opened correctly
-    if not webcam.isOpened():
-        print("Error: Couldn't open webcam")
-        return
+    # # Initialize the webcam
+    # webcam = cv2.VideoCapture(0)  # 0 for the default webcam, you can change it if you have multiple webcams
 
-    while True:
-        # Capture frame-by-frame
-        ret, frame = webcam.read()
+    # # Check if the webcam is opened correctly
+    # if not webcam.isOpened():
+    #     print("Error: Couldn't open webcam")
+    #     return
 
-        # Display the captured frame
-        cv2.imshow('Webcam', frame)
+    # while True:
+    #     # Capture frame-by-frame
+    #     ret, frame = webcam.read()
 
-        # Press 'q' to quit capturing
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+    #     # Display the captured frame
+    #     cv2.imshow('Webcam', frame)
 
-        # Make prediction on the captured frame
-        predicted_class = predict(frame)
-        print("Predicted class:", predicted_class)
+    #     # Press 'q' to quit capturing
+    #     if cv2.waitKey(1) & 0xFF == ord('q'):
+    #         break
 
-    # Release the webcam
-    webcam.release()
-    cv2.destroyAllWindows()
+    #     # Make prediction on the captured frame
+    #     predicted_class = predict(frame)
+    #     print("Predicted class:", predicted_class)
+
+    # # Release the webcam
+    # webcam.release()
+    # cv2.destroyAllWindows()
 
 # Call the function to capture image and make predictions
 capture_and_predict()
