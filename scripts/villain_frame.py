@@ -3,6 +3,7 @@ import rospy
 from sensor_msgs.msg import Image
 from std_msgs.msg import Empty
 from cv_bridge import CvBridge, CvBridgeError
+from drone_republisher import droneRepublisher
 import time
 import cv2 as cv 
 import numpy as np
@@ -13,28 +14,12 @@ inFrame = []
 
 windowCaptureName = 'Video Capture'
 windowDetectionName = 'Object Detection'
-
-class droneRepublisher:
-    def __init__(self):
-        self.takeoff = rospy.Publisher('/tello/takeoff', Empty, queue_size=1)
-        self.landing = rospy.Publisher('/tello/land', Empty, queue_size=1)
-
-        while self.takeoff.get_num_connections() < 1:
-           pass
-        self.takeoff.publish(Empty())
-
-        rospy.on_shutdown(self.land)
-
-    def land(self):
-        while self.landing.get_num_connections() < 1:
-           pass
-        self.landing.publish(Empty())
     
 
 class colourLimit:
     def __init__(self, colour, lower, upper):
         self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber('/tello/image_raw', Image, self.image_callback, queue_size=1)
+        self.image_sub = rospy.Subscriber('/tello/camera/image_raw', Image, self.image_callback, queue_size=1)
         
         self.colour = colour
         self.lower = lower
