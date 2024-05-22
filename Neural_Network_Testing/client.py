@@ -1,5 +1,6 @@
 import rospy
 from sensor_msgs.msg import Image
+from std_msgs.msg import String
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
 import websocket
@@ -44,7 +45,8 @@ def on_websocket_open(ws):
 if __name__ == '__main__':
     # Initialize ROS
     rospy.init_node('image_to_websocket', anonymous=True)
-    rospy.Subscriber("/tello/camera/image_raw", Image, on_image_received)
+    rospy.Subscriber("/droneCam/Villain", Image, on_image_received)
+    rospy.Publisher("/Villain", String, queue_size=1)
     
     # Setup WebSocket connection
     websocket.enableTrace(False)

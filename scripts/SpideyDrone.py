@@ -4,6 +4,7 @@ from cv_bridge import CvBridge, CvBridgeError
 import apriltag
 import cv2
 import numpy as np
+from Client import Client
 
 # Camera calibration parameters
 CAMERA_MATRIX = np.array([
@@ -19,6 +20,8 @@ TAG_SIZE = 0.08
 class SpideyDrone:
     def __init__(self):
         print("SpideyDrone Initialised")
+
+        self.villainFeedTransmitter = Client()
 
         # Subscribe to the image topic
         self.image_sub = rospy.Subscriber('/tello/image_raw', Image, self.droneFeedCallback, queue_size=1) 
@@ -87,3 +90,6 @@ class SpideyDrone:
         # Display the frame
         image = CvBridge().cv2_to_imgmsg(cv_image, encoding="bgr8")
         self.droneFeedAprilTagPub.publish(image)
+
+    def spinVillainFeedTransmitter(self):
+        self.villainFeedTransmitter.spin()

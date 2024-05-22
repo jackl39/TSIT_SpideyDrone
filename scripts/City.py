@@ -110,5 +110,5 @@ class City:
             # # else (self.bot.translation_vector is not None) and (self.distance < 0.7):
             # else:
             #     self.bot.rotate_by_angle(90)
-
+            self.drone.spinVillainFeedTransmitter()
             rate.sleep()
