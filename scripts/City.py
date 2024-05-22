@@ -4,12 +4,14 @@ import time
 import rospy
 from TurtleBot import TurtleBot
 from Map import Map
+from SpideyDrone import SpideyDrone
 
 class City:
 
     def __init__(self):
         print("City Initialised")
         self.bot = TurtleBot()
+        self.drone = SpideyDrone()
         self.map = Map()
         self.map.print_map()
 

@@ -28,7 +28,7 @@ class TurtleBot:
         self.odom_sub = rospy.Subscriber('/odom', Odometry, self.odom_callback)
         self.camera_sub = rospy.Subscriber('/camera/image_raw/compressed', CompressedImage, self.camera_callback)
         self.lidar_sub = rospy.Subscriber('/scan', LaserScan, queue_size=100, callback=self.lidar_callback)
-        self.camera_pub = rospy.Publisher('/april_tag', Image, queue_size=1)
+        self.camera_pub = rospy.Publisher('/spiderBot/AprilTag', Image, queue_size=1)
         
         self.odom = Odometry()
         self.command = Twist()
