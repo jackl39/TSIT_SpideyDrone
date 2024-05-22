@@ -9,6 +9,13 @@ import cv2 as cv
 import numpy as np
 import math
 
+
+### TO DO ###
+    # Extract 
+    # Publish 
+
+### WORKING IN BAG FILE, SUBSCRIBING INCORRECTLY IRL 
+
 colours = []
 inFrame = []
 
@@ -19,7 +26,10 @@ windowDetectionName = 'Object Detection'
 class colourLimit:
     def __init__(self, colour, lower, upper):
         self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber('/tello/camera/image_raw', Image, self.image_callback, queue_size=1)
+        ##  
+        #self.image_sub = rospy.Subscriber('/tello/image_raw', Image, self.image_callback, queue_size=1) 
+        #self.image_sub = rospy.Subscriber('/tello/camera_image_raw_mouse_left', Image, self.image_callback, queue_size=1) 
+        self.image_sub = rospy.Subscriber('/tello/camera/image_raw', Image, self.image_callback, queue_size=1) ##
         
         self.colour = colour
         self.lower = lower
@@ -27,10 +37,10 @@ class colourLimit:
     
     def image_callback(self, msg):  
         try: 
-            rospy.loginfo("Image Received.")
+            rospy.loginfo("Check1")
 
             cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-            colourThreshold(cv_image)
+            colourThreshold(cv_image) ##
         except CvBridgeError as e:
             rospy.logerr(f"CV Bridge error: {e}")
         except Exception as e: 
@@ -40,60 +50,62 @@ class detectClassify:
     def __init__(self, colour, centroid):
         self.colour = colour
         self.centroid = centroid
+    
     def __str__(self):
-        if self.colour == 0:
-            c = 'Villain' #red 
+        c = 'Villain'
         return 'Detected: ' + c + ' ' + str(self.centroid)
     
-def boundingBox(image, frame, colour):
-    maxMoments = 0
-    cX = 0
-    cY = 0
-    x = 0
-    y = 0
-    w = 0
-    h = 0
-    
+def boundingBox(image, frame, colour):    
     contours, _ = cv.findContours(frame, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     
-    for contour in contours:
-        M = cv.moments(contour)
-        if M["m00"] > maxMoments and M["m00"] > 3000:
-            cX = int(M["m10"] / M["m00"])
-            cY = int(M["m01"] / M["m00"])
-            detected = detectClassify(colour, (cX, cY))
-            inFrame.append(detected)
-            rospy.loginfo(f"Detected {detected}")
+    if contours:
+        # Colour Boundary
+        outer_contour = np.concatenate(contours)
+        x, y, w, h = cv.boundingRect(outer_contour)
 
-            # Set arbitrarily -- adjust 
-            x, y, w, h = cv.boundingRect(contour)
-            cv.circle(image, (cX, cY), 5, (255, 255, 255), -1)
-            cv.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
+        cX = int(x + w / 2)
+        cY = int(y + h / 2)
+        detected = detectClassify(colour, (cX, cY))
+        inFrame.append(detected)
 
-            border = 10 
-            border_x = x - border 
-            border_y = y - border 
-            border_w = w + 2*border
-            border_h = h + 2*border 
-            cv.rectangle(image, (border_x, border_y), (border_x + border_w, border_y + border_h), (255, 0, 0), 2)
+        cv.rectangle(image, (x, y), (x+w, y+h), (0, 0, 255), 2)
+
+        # Villain Boundary 
+        vX = x + w // 4
+        vY = y + h // 4
+        vW = w // 2
+        vH = h // 2
+
+        cv.rectangle(image, (vX, vY), (vX + vW, vY + vH), (255, 0, 0), 2)
+
+        ### TO DO ###
+        # Extract 
+        # Publish 
+                    
+        rospy.loginfo(f"Detected: {detected}")
+        rospy.loginfo("Check4")
 
     return image
 
 def colourThreshold(image):
-    rospy.loginfo("check")
+    rospy.loginfo("Check5")
+
     inFrame.clear()
 
     frameHSV = cv.cvtColor(image, cv.COLOR_BGR2HSV)
 
+    mask = np.zeros(frameHSV.shape[:2], dtype=np.uint8)
+
     if frameHSV is not None:
-        for i in range(len(colours)):
-            thresholdImage = cv.inRange(frameHSV, colours[i].lower, colours[i].upper)  
-            image = boundingBox(image, thresholdImage, colours[i].colour)  
-            if i == 5:
-                cv.imshow('threshold', thresholdImage)
+        for colour in colours: 
+            thresholdImage = cv.inRange(frameHSV, colour.lower, colour.upper)  
+            mask = cv.bitwise_or(mask, thresholdImage)
+        image = boundingBox(image, mask, "Villain")   
 
         cv.imshow(windowCaptureName, image)
         cv.waitKey(1)
+
+    rospy.loginfo("Check6")
 
 
 # Main
@@ -102,8 +114,13 @@ if __name__ == '__main__':
     rospy.init_node('villain_colour')
 
     drone = droneRepublisher()
-    red_colour = colourLimit(0, np.array([168, 149, 61]), np.array([179, 255, 255]))  #red
-    colours.append(red_colour)
+
+    red = colourLimit(0, np.array([168, 149, 61]), np.array([179, 255, 255]))  #red
+    purple = colourLimit(1, np.array([130, 100, 180]), np.array([160, 255, 255]))  #purple 
+    pink = colourLimit(2, np.array([140, 149, 61]), np.array([168, 255, 255]))
+    colours.append(red)
+    colours.append(purple)
+    colours.append(pink)
     
     rospy.loginfo("Node has been Initialised")
     rospy.spin()  
