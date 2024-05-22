@@ -6,11 +6,8 @@ import cv2
 import websocket
 import threading
 
-class ImageToWebSocket:
-    def __init__(self):
-        # Initialize ROS node
-        rospy.init_node('image_to_websocket', anonymous=True)
-        
+class Drone2CNN:
+    def __init__(self):        
         # Initialize CV Bridge
         self.bridge = CvBridge()
 
@@ -62,8 +59,8 @@ class ImageToWebSocket:
         print("WebSocket connection established")
 
     def run(self):
-        try:
-            rospy.spin()
-        except KeyboardInterrupt:
-            print("Shutting down")
-            self.ws.close()
+        rospy.spin()
+        
+    def shutdown(self):
+        print("Shutting down")
+        self.ws.close()

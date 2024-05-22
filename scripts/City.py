@@ -5,6 +5,7 @@ import rospy
 from TurtleBot import TurtleBot
 from Map import Map
 from SpideyDrone import SpideyDrone
+from Drone2CNN import Drone2CNN
 
 class City:
 
@@ -13,6 +14,7 @@ class City:
         self.bot = TurtleBot()
         self.drone = SpideyDrone()
         self.map = Map()
+        self.villainFeedTransmitter = Drone2CNN()
         self.map.print_map()
 
         self.direction_map = {
@@ -91,24 +93,29 @@ class City:
             # print(f"Street 1: {street1} Street2: {street2}")
             intersection = self.intersections.get((street1, street2), "Unknown intersection")
             self.lastIntersection = intersection
-            print(f"Direction: {self.direction}, Street: {self.street}, Intersection: {self.lastIntersection}")
+            # print(f"Direction: {self.dire/ction}, Street: {self.street}, Intersection: {self.lastIntersection}")
         if self.lastIntersection is None:
             self.lastIntersection = "No intersection visited yet"
-        print(f"Direction: {self.direction}, Street: {self.street}, Intersection: {self.lastIntersection}")
+        # print(f"Direction: {self.direction}, Street: {self.street}, Intersection: {self.lastIntersection}")
 
     def run(self):
         rate = rospy.Rate(10)
-        while not rospy.is_shutdown():
-            self.localize_april_tag()
-            self.bot.avoid_collisions()
-            # available_streets = self.bot.find_streets()
-            # print("Available streets: ", available_streets)
-            # selected_street = input("Select a street angle (0, 90, 180, etc.): ")
-            # self.bot.rotate_to(math.radians(float(selected_street)))
-            # if (self.bot.translation_vector is not None) and (self.bot.get_distance_to_tag() > 0.7):
-            #     self.bot.move_toward_tag()
-            # # else (self.bot.translation_vector is not None) and (self.distance < 0.7):
-            # else:
-            #     self.bot.rotate_by_angle(90)
-            self.drone.spinVillainFeedTransmitter()
-            rate.sleep()
+        try:
+            while not rospy.is_shutdown():
+                self.localize_april_tag()
+                self.bot.avoid_collisions()
+                # available_streets = self.bot.find_streets()
+                # print("Available streets: ", available_streets)
+                # selected_street = input("Select a street angle (0, 90, 180, etc.): ")
+                # self.bot.rotate_to(math.radians(float(selected_street)))
+                # if (self.bot.translation_vector is not None) and (self.bot.get_distance_to_tag() > 0.7):
+                #     self.bot.move_toward_tag()
+                # # else (self.bot.translation_vector is not None) and (self.distance < 0.7):
+                # else:
+                #     self.bot.rotate_by_angle(90)
+                rate.sleep()
+        except:
+            rospy.ROSInterruptException
+            pass
+        finally:
+            self.villainFeedTransmitter.shutdown()

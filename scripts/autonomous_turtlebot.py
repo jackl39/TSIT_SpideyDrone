@@ -6,6 +6,6 @@ if __name__ == '__main__':
     rospy.init_node('Localiser', anonymous=True)
     try:
         city = City()
-        # city.run()
+        city.run()
     except rospy.ROSInterruptException:
         pass
