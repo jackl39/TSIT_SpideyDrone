@@ -22,9 +22,7 @@ frame_pub = rospy.Publisher('villain/frames', Image, queue_size=1)
 class colourLimit:
     def __init__(self, colour, lower, upper):
         self.bridge = CvBridge()
-        ##  
-        #self.image_sub = rospy.Subscriber('/tello/image_raw', Image, self.image_callback, queue_size=1) 
-        #self.image_sub = rospy.Subscriber('/tello/camera_image_raw_mouse_left', Image, self.image_callback, queue_size=1) 
+        
         self.image_sub = rospy.Subscriber('/tello/camera/image_raw', Image, self.image_callback, queue_size=1) ##
         
         self.colour = colour

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import rospy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
@@ -21,7 +22,7 @@ class SpideyDrone:
         print("SpideyDrone Initialised")
 
         # Subscribe to the image topic
-        self.image_sub = rospy.Subscriber('/tello/image_raw', Image, self.droneFeedCallback, queue_size=1) 
+        self.image_sub = rospy.Subscriber('/tello/camera/image_raw', Image, self.droneFeedCallback, queue_size=1) 
         self.droneFeedAprilTagPub = rospy.Publisher('/droneCam/AprilTag', Image, queue_size=1)
         self.droneFeedVillainPub = rospy.Publisher('/droneCam/Villain', Image, queue_size=1)
         # Create a CvBridge to convert ROS images to OpenCV format
