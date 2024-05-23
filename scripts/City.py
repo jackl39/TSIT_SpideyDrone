@@ -12,8 +12,6 @@ import threading
 
 WINDOW_WIDTH, WINDOW_HEIGHT = 2048, 2048
 TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
-window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-pygame.display.set_caption('City Grid')
 WHITE = (255, 255, 255)
 
 # Alternative separate drone and bot functionality in separate roslaunch
@@ -22,16 +20,14 @@ DEMO = "TURTLEBOT"
 
 class City:
 
-    def __init__(self):
+    def __init__(self, window):
         print("City Initialised")
-        # Pygame initialization
-        pygame.init()
-        self.screen = pygame.display.set_mode((2048, 2048))
-        pygame.display.set_caption("City Visualization")
         
+        self.window = window        
         # Start the GUI in a separate thread
         self.gui_thread = threading.Thread(target=self.run_pygame)
         self.gui_thread.start()
+
         self.bot = None
         self.drone = None
         if (DEMO == "TURTLEBOT"):
@@ -114,19 +110,19 @@ class City:
                     running = False
 
             # Visalise the map and indicate each intersections status
-            window.fill(WHITE)
+            self.window.fill(WHITE)
             for x in range(self.map.grid_width):
                 for y in range(self.map.grid_height):
                     intersection = self.map.grid[x][y]
                     if intersection:
-                        window.blit(intersection.intersection_image, (x * TILE_SIZE, y * TILE_SIZE))
+                        self.window.blit(intersection.intersection_image, (x * TILE_SIZE, y * TILE_SIZE))
                         color = self.get_color_based_on_status(intersection.status)
                         alpha_value = 128
                         circle_surface = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
                         transparent_color = color + (alpha_value,)
                         radius = TILE_SIZE // 3
                         pygame.draw.circle(circle_surface, transparent_color, (TILE_SIZE // 2, TILE_SIZE // 2), radius)
-                        window.blit(circle_surface, (x * TILE_SIZE, y * TILE_SIZE))
+                        self.window.blit(circle_surface, (x * TILE_SIZE, y * TILE_SIZE))
 
             pygame.display.flip()
             pygame.time.wait(100)  # Update every 100 milliseconds
