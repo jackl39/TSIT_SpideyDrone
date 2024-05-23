@@ -28,11 +28,11 @@ class droneRepublisher:
         odom_sub = rospy.Subscriber('/tello/odom', Odometry, 
                         lambda msg: self.odom_subscriber(msg), queue_size=1)
         
-        while self.takeoff.get_num_connections() < 1:
-           pass
-        self.takeoff.publish(Empty())
+        # while self.takeoff.get_num_connections() < 1:
+        #    pass
+        # self.takeoff.publish(Empty())
 
-        rospy.on_shutdown(self.land)
+        # rospy.on_shutdown(self.land)
 
         rospy.sleep(5) ##### 
         # fly to corner node 

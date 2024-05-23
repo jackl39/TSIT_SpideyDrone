@@ -31,8 +31,6 @@ class colourLimit:
     
     def image_callback(self, msg):  
         try: 
-            rospy.loginfo("Check1")
-
             cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
             colourThreshold(cv_image) ##
         except CvBridgeError as e:
@@ -73,11 +71,7 @@ def boundingBox(image, frame, colour):
 
         cv.rectangle(image, (vX, vY), (vX + vW, vY + vH), (255, 0, 0), 2)
         cropped_image = image[vY: vY + vH, vX : vX + vW]
-        #print(f'X points ({vX},{vH}), Y points {vY, vW}')
 
-        ### TO DO ###
-        # Extract 
-        # Publish 
                     
     return image, cropped_image
 
@@ -97,7 +91,9 @@ def colourThreshold(image):
         frame_pub.publish(img_mgs)
 
         if isinstance(cropped, np.ndarray):
-            cropped_msg = CvBridge().cv2_to_imgmsg(cropped, "bgr8")
+            sharpen = cv.dnn_superres.DnnSuperResImpl_create()
+            sharpened_img = sharpen.upsample(cropped)
+            cropped_msg = CvBridge().cv2_to_imgmsg(sharpened_img, "bgr8")
             cropped_pub.publish(cropped_msg)
 
 
@@ -108,12 +104,14 @@ if __name__ == '__main__':
 
     drone = droneRepublisher()
 
-    red = colourLimit(0, np.array([168, 149, 61]), np.array([179, 255, 255]))  #red
-    purple = colourLimit(1, np.array([130, 100, 180]), np.array([160, 255, 255]))  #purple 
-    pink = colourLimit(2, np.array([140, 149, 61]), np.array([168, 255, 255]))
-    colours.append(red)
-    colours.append(purple)
-    colours.append(pink)
+    green = colourLimit(0, np.array([40, 130, 110]), np.array([80, 255, 255]))
+    # red = colourLimit(0, np.array([168, 149, 61]), np.array([179, 255, 255]))  #red
+    # purple = colourLimit(1, np.array([130, 100, 180]), np.array([160, 255, 255]))  #purple 
+    # pink = colourLimit(2, np.array([140, 149, 61]), np.array([168, 255, 255]))
+    colours.append(green)
+    # colours.append(purple)
+    # colours.append(pink)
     
+
     rospy.loginfo("Node has been Initialised")
     rospy.spin()  
