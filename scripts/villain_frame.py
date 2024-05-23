@@ -21,6 +21,8 @@ inFrame = []
 
 windowCaptureName = 'Video Capture'
 windowDetectionName = 'Object Detection'
+
+frame_pub = rospy.Publisher('/villain/frames', Image, queue_size=1)
     
 
 class colourLimit:
@@ -77,19 +79,16 @@ def boundingBox(image, frame, colour):
         vH = h // 2
 
         cv.rectangle(image, (vX, vY), (vX + vW, vY + vH), (255, 0, 0), 2)
+        image = image[vY: vY + vH, vX : vX + vW]
+        #print(f'X points ({vX},{vH}), Y points {vY, vW}')
 
         ### TO DO ###
         # Extract 
         # Publish 
                     
-        rospy.loginfo(f"Detected: {detected}")
-        rospy.loginfo("Check4")
-
     return image
 
 def colourThreshold(image):
-    rospy.loginfo("Check5")
-
     inFrame.clear()
 
     frameHSV = cv.cvtColor(image, cv.COLOR_BGR2HSV)
@@ -101,11 +100,9 @@ def colourThreshold(image):
             thresholdImage = cv.inRange(frameHSV, colour.lower, colour.upper)  
             mask = cv.bitwise_or(mask, thresholdImage)
         image = boundingBox(image, mask, "Villain")   
+        img_mgs = CvBridge().cv2_to_imgmsg(image, "bgr8")
 
-        cv.imshow(windowCaptureName, image)
-        cv.waitKey(1)
-
-    rospy.loginfo("Check6")
+        frame_pub.publish(img_mgs)
 
 
 # Main
