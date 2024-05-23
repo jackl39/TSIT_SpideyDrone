@@ -32,12 +32,8 @@ class SpideyDrone:
         # Create a CvBridge to convert ROS images to OpenCV format
         self.bridge = CvBridge()
 
-        self.lastTag = None
-        self.direction = None
-        self.street = None
-        self.lastIntersection = None
-        self.last2Tags = []
-        self.lastTime = None
+        self.tag_id = None
+        self.intersection = None
 
         while self.takeoff.get_num_connections() < 1:
            pass
@@ -45,6 +41,12 @@ class SpideyDrone:
 
         self.rawImage = None
         rospy.on_shutdown(self.land)
+
+    def getTagID(self):
+        return self.tag_id
+    
+    def updatePosition(self, intersection):
+        self.intersection = intersection
 
     def land(self):
         while self.landing.get_num_connections() < 1:

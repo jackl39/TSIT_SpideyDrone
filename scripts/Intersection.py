@@ -4,6 +4,8 @@ from Status import Status
 import pygame
 import sys
 
+pygame.init()
+
 try:
     intersection_image = pygame.image.load('tile_city.jpg').convert()
     intersection_image = pygame.transform.scale(intersection_image, (512, 512))

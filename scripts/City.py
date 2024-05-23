@@ -13,7 +13,12 @@ import threading
 WINDOW_WIDTH, WINDOW_HEIGHT = 2048, 2048
 TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+pygame.display.set_caption('City Grid')
 WHITE = (255, 255, 255)
+
+# Alternative separate drone and bot functionality in separate roslaunch
+DEMO = "TURTLEBOT"
+#DEMO = "SPIDEYDRONE"
 
 class City:
 
@@ -27,11 +32,16 @@ class City:
         # Start the GUI in a separate thread
         self.gui_thread = threading.Thread(target=self.run_pygame)
         self.gui_thread.start()
-        
-        self.bot = TurtleBot()
-        self.drone = SpideyDrone()
+        self.bot = None
+        self.drone = None
+        if (DEMO == "TURTLEBOT"):
+            self.bot = TurtleBot()
+        elif (DEMO == "SPIDEYDRONE"):
+            self.drone = SpideyDrone()
+            self.villainFeedTransmitter = Drone2CNN()
+        else:
+            print("Demo type not set")
         self.map = Map()
-        self.villainFeedTransmitter = Drone2CNN()
         self.map.print_map()
 
 
@@ -124,7 +134,12 @@ class City:
         pygame.quit()
 
     def localize_april_tag(self):
-        tag_id = self.bot.getTagID()
+        if self.bot is not None:
+            tag_id = self.bot.getTagID()
+        elif self.drone is not None:
+            tag_id = self.drone.getTagID()
+        else:
+            print("Neither drone or bot initialised")
         self.tagId = tag_id
         self.direction = self.direction_map.get(tag_id, "Unknown direction")
         self.street = self.street_map.get(tag_id, "Unknown street")
@@ -159,6 +174,10 @@ class City:
         if self.lastIntersection is None:
             self.lastIntersection = "No intersection visited yet"
         # print(f"Direction: {self.direction}, Street: {self.street}, Intersection: {self.lastIntersection}")
+        if self.bot is not None:
+            self.bot.updatePosition(self, self.map.getIntersection(self.lastIntersection))
+        else:
+            self.drone.updatePosition(self, self.map.getIntersection(self.lastIntersection))
 
     def run(self):
         rate = rospy.Rate(10)
@@ -168,6 +187,7 @@ class City:
                 self.bot.avoid_collisions()
                 # available_streets = self.bot.find_streets()
                 # print("Available streets: ", available_streets)
+                # selected_street = inputs: ", available_streets)
                 # selected_street = input("Select a street angle (0, 90, 180, etc.): ")
                 # self.bot.rotate_to(math.radians(float(selected_street)))
                 # if (self.bot.translation_vector is not None) and (self.bot.get_distance_to_tag() > 0.7):

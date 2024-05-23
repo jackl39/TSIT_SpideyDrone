@@ -40,6 +40,7 @@ class TurtleBot:
         self.translation_vector = None
         self.minDist = None
         self.distance = None
+        self.intersection = None
 
     def getTagID(self):
         return self.tag_id
@@ -96,6 +97,9 @@ class TurtleBot:
         # Display the frame
         image = CvBridge().cv2_to_imgmsg(rotated_undistorted_frame, encoding="bgr8")
         self.camera_pub.publish(image)
+
+    def updatePosition(self, intersection):
+        self.intersection = intersection
 
     def update_pose(self):
         self.x = self.odom.pose.pose.position.x

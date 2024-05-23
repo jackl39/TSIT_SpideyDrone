@@ -43,7 +43,7 @@ class Map:
             return self.grid[x][y].safe  # Assuming Intersection class has a 'safe' attribute
         return None
     
-    def getIntesection(self, intersectionName):
+    def getIntersection(self, intersectionName):
         for value in self.intersectionsLs:
             if value.intersection == intersectionName:
                 return value
