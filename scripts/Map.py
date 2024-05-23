@@ -2,7 +2,7 @@
 
 from Intersection import Intersection
 
-GRID_WIDTH, GRID_HEIGHT = 4, 4
+GRID_WIDTH, GRID_HEIGHT = 3, 3
 
 class Map:
     def __init__(self):
@@ -20,23 +20,24 @@ class Map:
         }
         
         self.street_map = {
-                    0: "1st Street", 8: "1st Street",
-                    1: "2nd Street", 7: "2nd Street",
-                    2: "3rd Street", 6: "3rd Street",
-                    3: "4th Street", 11: "4th Street",
-                    4: "5th Street", 10: "5th Street",
-                    5: "6th Street", 9: "6th Street"
-                }
+            0: "1st Street", 8: "1st Street",
+            1: "2nd Street", 7: "2nd Street",
+            2: "3rd Street", 6: "3rd Street",
+            3: "4th Street", 11: "4th Street",
+            4: "5th Street", 10: "5th Street",
+            5: "6th Street", 9: "6th Street"
+        }
         
         self.intersectionsLs = []
         self.grid_width = max(x for x, y in self.intersections.keys()) + 1
         self.grid_height = max(y for x, y in self.intersections.keys()) + 1
         self.grid = [[None for _ in range(self.grid_height)] for _ in range(self.grid_width)]
 
-        for (x, y), name in self.intersections.items():
-            intersection = Intersection(self.street_map.get(x, "Unknown"), self.street_map.get(y, "Unknown"))
-            self.intersectionsLs.append(intersection)
-            self.grid[x][y] = intersection
+        for y in range(0, 3):
+            for x in range(3, 6):
+                intersection = Intersection(self.street_map.get(y, "Unknown"), self.street_map.get(x, "Unknown"))
+                self.intersectionsLs.append(intersection)
+                self.grid[x-3][y] = intersection
 
     def get_status(self, x, y):
         if self.grid[x][y]:

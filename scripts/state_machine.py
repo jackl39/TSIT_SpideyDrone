@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import math
 import drone_republisher as Drone
 import rospy

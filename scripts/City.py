@@ -2,6 +2,8 @@
 
 import time
 import rospy
+import math
+from std_msgs.msg import String
 from TurtleBot import TurtleBot
 from Map import Map, GRID_WIDTH
 from SpideyDrone import SpideyDrone
@@ -10,7 +12,7 @@ from Intersection import Intersection, Status
 import pygame
 import threading
 
-WINDOW_WIDTH, WINDOW_HEIGHT = 2048, 2048
+WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 1024
 TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
 WHITE = (255, 255, 255)
 
@@ -25,6 +27,9 @@ class City:
 
         self.bot = None
         self.drone = None
+        self.botLocationPub = rospy.Publisher("/Spiderman/Location", String, queue_size=1)
+        self.droneLocationPub = rospy.Publisher("/SpideyDrone/location", String, queue_size=1)
+        self
         if (DEMO == "TURTLEBOT"):
             self.bot = TurtleBot()
         elif (DEMO == "SPIDEYDRONE"):
@@ -33,7 +38,7 @@ class City:
         else:
             print("Demo type not set")
         self.map = Map()
-        self.map.print_map()
+        # self.map.print_map()
 
         self.window = window        
         # Start the GUI in a separate thread
@@ -78,12 +83,51 @@ class City:
             (2, 5): "Third and Sixth", (5, 2): "Third and Sixth"
         }
 
+        self.intersectionsToDraw = {
+            "First and Fourth" : [0, 0],
+            "First and Fifth" : [1, 0],
+            "First and Sixth" : [2, 0],
+            "Second and Fourth" : [0, 1],
+            "Second and Fifth" : [1, 1],
+            "Second and Sixth" : [2, 1],
+            "Third and Fourth" : [0, 2],
+            "Third and Fifth" : [1, 2],
+            "Third and Sixth" : [2, 2]
+        }
+
         self.lastTag = None
         self.direction = None
         self.street = None
         self.lastIntersection = None
         self.last2Tags = []
         self.lastTime = None
+
+    def run(self):
+        rate = rospy.Rate(10)
+        try:
+            while not rospy.is_shutdown():
+                self.localize_april_tag()
+                # self.bot.avoid_collisions()
+                available_streets = self.bot.find_streets()
+                print("Available streets: ", available_streets)
+                # selected_street = inputs: ", available_streets)
+                selected_street = input("Select a street angle (0, 90, 180, etc.): ")
+                self.bot.rotate_to(math.radians(float(selected_street)))
+                # self.bot.move_to(s)
+                # if (self.bot.translation_vector is not None) and (self.bot.get_distance_to_tag() > 0.7):
+                #     self.bot.move_toward_tag()
+                # # else (self.bot.translation_vector is not None) and (self.distance < 0.7):
+                # else:
+                #     self.bot.rotate_by_angle(90)
+                rate.sleep()
+        except:
+            rospy.ROSInterruptException
+            pass
+        finally:
+            if self.drone is not None:
+                self.villainFeedTransmitter.shutdown()
+            else:
+                print("Exited Gracefully")
 
     def get_color_based_on_status(self, status):
         # Define colors
@@ -125,7 +169,17 @@ class City:
                         self.window.blit(circle_surface, (x * TILE_SIZE, y * TILE_SIZE))
 
             pygame.display.flip()
+            if rospy.is_shutdown():
+                running = False
             pygame.time.wait(100)  # Update every 100 milliseconds
+            if self.drone is not None:
+                self.drone.draw(self.window, self.intersectionsToDraw.get(self.lastIntersection, None))
+            elif self.bot is not None:
+                self.bot.draw(self.window, self.intersectionsToDraw.get(self.lastIntersection, None))
+            else:
+                print("Neither drone or bot initialised")
+
+            pygame.display.update()
 
         pygame.quit()
 
@@ -150,7 +204,7 @@ class City:
             # This is to avoid having the same tag twice in the last 2 tags
             # and to allow time to make a turn onto a new street
             if self.lastTime is not None:
-                if time.time() - self.lastTime > 7.5 and len(self.last2Tags) == 2:
+                if time.time() - self.lastTime > 20 and len(self.last2Tags) == 2:
                     self.last2Tags.pop(0)
             self.lastTag = tag_id
             self.lastTime = time.time()
@@ -168,35 +222,17 @@ class City:
             self.lastIntersection = intersection
             # print(f"Direction: {self.dire/ction}, Street: {self.street}, Intersection: {self.lastIntersection}")
         if self.lastIntersection is None:
-            self.lastIntersection = "No intersection visited yet"
-        # print(f"Direction: {self.direction}, Street: {self.street}, Intersection: {self.lastIntersection}")
-        if self.bot is not None:
-            self.bot.updatePosition(self, self.map.getIntersection(self.lastIntersection))
+            lastIntersectionToPrint = "No intersection visited yet"
         else:
-            self.drone.updatePosition(self, self.map.getIntersection(self.lastIntersection))
-
-    def run(self):
-        rate = rospy.Rate(10)
-        try:
-            while not rospy.is_shutdown():
-                self.localize_april_tag()
-                self.bot.avoid_collisions()
-                # available_streets = self.bot.find_streets()
-                # print("Available streets: ", available_streets)
-                # selected_street = inputs: ", available_streets)
-                # selected_street = input("Select a street angle (0, 90, 180, etc.): ")
-                # self.bot.rotate_to(math.radians(float(selected_street)))
-                # if (self.bot.translation_vector is not None) and (self.bot.get_distance_to_tag() > 0.7):
-                #     self.bot.move_toward_tag()
-                # # else (self.bot.translation_vector is not None) and (self.distance < 0.7):
-                # else:
-                #     self.bot.rotate_by_angle(90)
-                rate.sleep()
-        except:
-            rospy.ROSInterruptException
-            pass
-        finally:
-            if self.drone is not None:
-                self.villainFeedTransmitter.shutdown()
+            lastIntersectionToPrint = self.lastIntersection
+        print(f"Direction: {self.direction}, Street: {self.street}, Intersection: {lastIntersectionToPrint}")
+        # Update positions in bot and drone so that they can be drawn in GUI
+        if (self.lastIntersection is not None):
+            if self.bot is not None:
+                self.botLocationPub.publish(self.lastIntersection)
             else:
-                print("Exited Gracefully")
+                self.droneLocationPub.publish(self.lastIntersection)
+
+# from city
+# self.bot.getLocation()
+# will return "First and Fourth"

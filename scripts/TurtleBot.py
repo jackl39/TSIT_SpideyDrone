@@ -11,6 +11,13 @@ from sensor_msgs.msg import CompressedImage, LaserScan
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist, Pose
 from sensor_msgs.msg import Image
+from std_msgs.msg import String
+import pygame
+import sys
+
+WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 1024
+GRID_WIDTH, GRID_HEIGHT = 3, 3
+TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
 
 CAMERA_MATRIX = np.array([[503.038912, 0.00, 338.40326932],
                           [0.00, 499.01230583, 239.41331672],
@@ -29,6 +36,7 @@ class TurtleBot:
         self.camera_sub = rospy.Subscriber('/camera/image_raw/compressed', CompressedImage, self.camera_callback)
         self.lidar_sub = rospy.Subscriber('/scan', LaserScan, queue_size=100, callback=self.lidar_callback)
         self.camera_pub = rospy.Publisher('/spiderBot/AprilTag', Image, queue_size=1)
+        self.location_sub = rospy.Subscriber('/Spiderman/Location', String, self.locationCallback)
         
         self.odom = Odometry()
         self.command = Twist()
@@ -41,6 +49,13 @@ class TurtleBot:
         self.minDist = None
         self.distance = None
         self.intersection = None
+
+        try:
+            droneImg = pygame.image.load('spider_bot.png').convert()
+            self.droneImg = pygame.transform.scale(droneImg, (TILE_SIZE, TILE_SIZE))
+        except Exception as e:
+            print(f"Failed to load intersection_image: {e}")
+            sys.exit()
 
     def getTagID(self):
         return self.tag_id
@@ -98,8 +113,8 @@ class TurtleBot:
         image = CvBridge().cv2_to_imgmsg(rotated_undistorted_frame, encoding="bgr8")
         self.camera_pub.publish(image)
 
-    def updatePosition(self, intersection):
-        self.intersection = intersection
+    def locationCallback(self, msg):
+        self.intersection = msg
 
     def update_pose(self):
         self.x = self.odom.pose.pose.position.x
@@ -169,7 +184,7 @@ class TurtleBot:
         available_streets = []
         for angle in range(0, 360, 90):
             self.rotate_by_angle(90)
-            if self.translation_vector is not None:
+            if np.linalg.norm(self.translation_vector) > 1.2:
                 available_streets.append(angle)
         return available_streets
 
@@ -180,3 +195,8 @@ class TurtleBot:
         #         print("Collision avoidance")
         #         self.set_speeds(0, 0, 0)
         #         self.publish_cmd_vel()
+
+    def draw(self, window, xyLoc):
+        print(xyLoc)
+        drone_pos = (int(xyLoc[0]) * TILE_SIZE + (TILE_SIZE-120) // 2, int(xyLoc[1]) * TILE_SIZE + (TILE_SIZE-120) // 2)
+        window.blit(self.droneImg, drone_pos)

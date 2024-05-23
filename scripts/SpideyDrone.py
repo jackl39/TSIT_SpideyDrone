@@ -7,6 +7,11 @@ import apriltag
 import cv2
 import numpy as np
 from std_msgs.msg import Empty
+import pygame
+
+WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 1024
+GRID_WIDTH, GRID_HEIGHT = 3, 3
+TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
 
 # Camera calibration parameters
 CAMERA_MATRIX = np.array([
@@ -88,15 +93,14 @@ class SpideyDrone:
                     self.distance = np.linalg.norm(t)
                     self.translation_vector = t
                     cv2.putText(cv_image, f"Distance: {self.distance:.2f}m", (ptA[0], ptA[1] - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                else:
+                    self.translation_vector = None
+                    print("No April Tag Detected")
 
-            if tag_detected or len(results) == 0:
-                imageAprilTag = self.bridge.cv2_to_imgmsg(cv_image, encoding="bgr8")
-                self.droneFeedAprilTagPub.publish(imageAprilTag)
-            else:
-                print("No April tag detected")
-
-            ros_image_message = self.bridge.cv2_to_imgmsg(cv_image, "bgr8")
-            # self.droneFeedVillainPub.publish(ros_image_message)
+            imageAprilTag = self.bridge.cv2_to_imgmsg(cv_image, encoding="bgr8")
+            while self.droneFeedAprilTagPub.get_num_connections < 1:
+                pass
+            self.droneFeedAprilTagPub.publish(imageAprilTag)
 
         except CvBridgeError as e:
             rospy.logerr("Failed to convert image: %s", e)

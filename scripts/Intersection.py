@@ -4,13 +4,17 @@ from Status import Status
 import pygame
 import sys
 
+WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 1024
+GRID_WIDTH, GRID_HEIGHT = 3, 3
+TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
+
 class Intersection:
     def __init__(self, street1, street2):
         print("Intersection Initialised")
 
         try:
             intersection_image = pygame.image.load('tile_city.jpg').convert()
-            self.intersection_image = pygame.transform.scale(intersection_image, (512, 512))
+            self.intersection_image = pygame.transform.scale(intersection_image, (TILE_SIZE, TILE_SIZE))
         except Exception as e:
             print(f"Failed to load intersection_image: {e}")
             sys.exit()

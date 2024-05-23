@@ -5,7 +5,7 @@ from City import City
 
 def initialize_pygame():
     pygame.init()
-    window_size = (2048, 2048)
+    window_size = (1024, 1024)
     window = pygame.display.set_mode(window_size)
     pygame.display.set_caption("City Visualization")
     return window
