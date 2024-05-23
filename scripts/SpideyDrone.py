@@ -24,7 +24,7 @@ class SpideyDrone:
         print("SpideyDrone Initialised")
 
         # Subscribe to the image topic
-        self.image_sub = rospy.Subscriber('/tello/image_raw', Image, self.droneFeedCallback, queue_size=1) 
+        self.image_sub = rospy.Subscriber('/tello/camera/image_raw', Image, self.droneFeedCallback, queue_size=1) 
         self.droneFeedAprilTagPub = rospy.Publisher('/droneCam/AprilTag', Image, queue_size=1)
         self.droneFeedVillainPub = rospy.Publisher('/droneCam/Villain', Image, queue_size=1)
         self.takeoff = rospy.Publisher('/tello/takeoff', Empty, queue_size=1)
@@ -42,12 +42,12 @@ class SpideyDrone:
         self.last2Tags = []
         self.lastTime = None
 
-        while self.takeoff.get_num_connections() < 1:
-           pass
-        self.takeoff.publish(Empty())
+        # while self.takeoff.get_num_connections() < 1:
+        #    pass
+        # self.takeoff.publish(Empty())
 
-        self.rawImage = None
-        rospy.on_shutdown(self.land)
+        # self.rawImage = None
+        # rospy.on_shutdown(self.land)
 
     def land(self):
         while self.landing.get_num_connections() < 1:
@@ -57,7 +57,7 @@ class SpideyDrone:
     def droneFeedCallback(self, data):
         try:
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
-            self.droneFeedVillainPub(cv_image)
+            #self.droneFeedVillainPub(cv_image)
 
             gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
             # Detect AprilTags in the image
@@ -93,10 +93,11 @@ class SpideyDrone:
 
                     else:
                         self.translation_vector = None
-                        print("No April tag detected")
-                        # Display the frame
-                        imageAprilTag = CvBridge().cv2_to_imgmsg(cv_image, encoding="bgr8")
-                        self.droneFeedAprilTagPub.publish(imageAprilTag)
+                    # Display the frame
+                    imageAprilTag = CvBridge().cv2_to_imgmsg(cv_image, encoding="bgr8")
+                    while self.droneFeedAprilTagPub.get_num_connections() < 1:
+                        pass
+                    self.droneFeedAprilTagPub.publish(imageAprilTag)
 
         except CvBridgeError as e:
             print("Failed to convert image:", e)

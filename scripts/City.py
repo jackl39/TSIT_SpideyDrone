@@ -10,7 +10,6 @@ from Drone2CNN import Drone2CNN
 class City:
 
     def __init__(self):
-        print("City Initialised")
         self.bot = TurtleBot()
         self.drone = SpideyDrone()
         self.map = Map()
