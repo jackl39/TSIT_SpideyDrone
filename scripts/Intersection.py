@@ -4,18 +4,17 @@ from Status import Status
 import pygame
 import sys
 
-pygame.init()
-
-try:
-    intersection_image = pygame.image.load('tile_city.jpg').convert()
-    intersection_image = pygame.transform.scale(intersection_image, (512, 512))
-except Exception as e:
-    print(f"Failed to load intersection_image: {e}")
-    sys.exit()
-
 class Intersection:
     def __init__(self, street1, street2):
         print("Intersection Initialised")
+
+        try:
+            intersection_image = pygame.image.load('tile_city.jpg').convert()
+            self.intersection_image = pygame.transform.scale(intersection_image, (512, 512))
+        except Exception as e:
+            print(f"Failed to load intersection_image: {e}")
+            sys.exit()
+
         self.streetsToIntersections = {
             ("1st Street", "4th Street"): "First and Fourth", ("4th Street", "1st Street"): "First and Fourth",
             ("1st Street", "5th Street"): "First and Fifth", ("5th Street", "1st Street"): "First and Fifth",
@@ -57,7 +56,6 @@ class Intersection:
         self.intersectionName = self.streetsToIntersections.get((self.street1, self.street2), "Unknown intersection")
         self.neighbours = self.neighbouringIntersections.get(self.intersectionName, "Unknown intersections")
         self.status = Status() 
-        self.intersection_image = intersection_image
 
     def update_status(self, new_status):
         if new_status in [Status.SAFE, Status.UNSAFE, Status.GOAL]:

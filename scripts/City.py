@@ -22,11 +22,6 @@ class City:
 
     def __init__(self, window):
         print("City Initialised")
-        
-        self.window = window        
-        # Start the GUI in a separate thread
-        self.gui_thread = threading.Thread(target=self.run_pygame)
-        self.gui_thread.start()
 
         self.bot = None
         self.drone = None
@@ -39,6 +34,11 @@ class City:
             print("Demo type not set")
         self.map = Map()
         self.map.print_map()
+
+        self.window = window        
+        # Start the GUI in a separate thread
+        self.gui_thread = threading.Thread(target=self.run_pygame)
+        self.gui_thread.start()
 
 
         self.direction_map = {
@@ -196,4 +196,7 @@ class City:
             rospy.ROSInterruptException
             pass
         finally:
-            self.villainFeedTransmitter.shutdown()
+            if self.drone is not None:
+                self.villainFeedTransmitter.shutdown()
+            else:
+                print("Exited Gracefully")
