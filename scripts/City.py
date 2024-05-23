@@ -12,6 +12,7 @@ from Intersection import Intersection, Status
 import pygame
 import threading
 
+
 WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 1024
 TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
 WHITE = (255, 255, 255)
@@ -110,14 +111,20 @@ class City:
                 self.bot.avoid_collisions()
                 available_streets = self.bot.find_streets()
                 self.localize_april_tag()
-                print("Available streets: ", available_streets)
-                selected_street = input("Select a street angle (0, 90, 180, etc.): ")
-                self.bot.rotate_to(math.radians(float(selected_street)))
                 print(f"the bots direction {self.direction_map.get(self.bot.getTagID())}")
                 print(f"The current intersection {self.lastIntersection}")
 
-                route = self.map.find_shortest_path(self.lastIntersection, "Third and Sixth")
+                route = self.map.find_shortest_path(self.lastIntersection, "Second and Fifth")
                 print(route)
+                curr_inter = self.lastIntersection
+                for inter in route:
+                    if curr_inter == inter:
+                        pass
+                    elif inter != curr_inter:
+                        angle = self.determine_movement(curr_inter, inter)
+                        print(angle)
+                        self.bot.rotate_by_angle(angle)
+                        return
                 #self.bot.move_to(s)
                 # if (self.bot.translation_vector is not None) and (self.bot.get_distance_to_tag() > 0.7):
                 #     self.bot.move_toward_tag()
@@ -232,6 +239,47 @@ class City:
                 self.botLocationPub.publish(self.lastIntersection)
             else:
                 self.droneLocationPub.publish(self.lastIntersection)
+
+        
+    def determine_movement(self, curr_intersection, next_intersection):
+        #assuming x y coordinate system with streets
+        #This will return the direction required for the next 
+        curr_coord = self.intersectionsToDraw.get(curr_intersection)
+        next_coord = self.intersectionsToDraw.get(next_intersection)
+        y_move = next_coord[0] - curr_coord[0]
+        x_move = next_coord[1] - curr_coord[1]
+        next_dir = None
+        if x_move > 0:
+            next_dir = 1
+        elif x_move < 0:
+            next_dir = 3
+        elif y_move > 0:
+            next_dir = 2
+        elif y_move < 0:
+            next_dir = 0
+
+        curr_dir = 0
+        if self.direction == "North":
+            curr_dir = 0
+        elif self.direction == "South":
+            curr_dir = 2
+        elif self.direction == "East":
+            curr_dir = 3
+        elif self.direction == "West":
+            curr_dir = 1
+
+        print(f"CUrrent direction: {self.direction}")
+        print(f"desired direction number: {next_dir}")
+
+        clockwise = (next_dir - curr_dir) % 4
+        anticlockwise = (curr_dir - next_dir) % 4
+        if clockwise < anticlockwise:
+            return -clockwise * 90
+        else:
+            return anticlockwise * 90
+        
+
+
 
 # from city
 # self.bot.getLocation()
