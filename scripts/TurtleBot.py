@@ -14,10 +14,13 @@ from sensor_msgs.msg import Image
 from std_msgs.msg import String
 import pygame
 import sys
+import time
 
-WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 1024
-GRID_WIDTH, GRID_HEIGHT = 3, 3
-TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
+
+
+# WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 1024
+# GRID_WIDTH, GRID_HEIGHT = 3, 3
+# TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
 
 CAMERA_MATRIX = np.array([[503.038912, 0.00, 338.40326932],
                           [0.00, 499.01230583, 239.41331672],
@@ -44,18 +47,19 @@ class TurtleBot:
         self.y = 0
         self.theta = 0
         self.tag_id = None
+        self.last_tag_id = 0
         self.lidar_data = []
         self.translation_vector = None
         self.minDist = None
         self.distance = None
         self.intersection = None
 
-        try:
-            droneImg = pygame.image.load('spider_bot.png').convert()
-            self.droneImg = pygame.transform.scale(droneImg, (TILE_SIZE, TILE_SIZE))
-        except Exception as e:
-            print(f"Failed to load intersection_image: {e}")
-            sys.exit()
+        # try:
+        #     droneImg = pygame.image.load('spider_bot.png').convert()
+        #     self.droneImg = pygame.transform.scale(droneImg, (TILE_SIZE, TILE_SIZE))
+        # except Exception as e:
+        #     print(f"Failed to load intersection_image: {e}")
+        #     sys.exit()
 
     def getTagID(self):
         return self.tag_id
@@ -93,6 +97,8 @@ class TurtleBot:
                 cv2.line(rotated_undistorted_frame, ptC, ptD, (0, 255, 0), 2)
                 cv2.line(rotated_undistorted_frame, ptD, ptA, (0, 255, 0), 2)
 
+                if result.tag_id != self.tag_id:
+                    self.last_tag_id = self.tag_id
                 self.tag_id = result.tag_id
                 cv2.putText(rotated_undistorted_frame, f"ID: {self.tag_id}", (ptA[0], ptA[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
@@ -184,6 +190,9 @@ class TurtleBot:
         available_streets = []
         for angle in range(0, 360, 90):
             self.rotate_by_angle(90)
+            curr_time = time.time()
+            while time.time() - curr_time < 2:
+                pass
             if np.linalg.norm(self.translation_vector) > 1.2:
                 available_streets.append(angle)
         return available_streets
@@ -196,7 +205,7 @@ class TurtleBot:
         #         self.set_speeds(0, 0, 0)
         #         self.publish_cmd_vel()
 
-    def draw(self, window, xyLoc):
-        print(xyLoc)
-        drone_pos = (int(xyLoc[0]) * TILE_SIZE + (TILE_SIZE-120) // 2, int(xyLoc[1]) * TILE_SIZE + (TILE_SIZE-120) // 2)
-        window.blit(self.droneImg, drone_pos)
+    # def draw(self, window, xyLoc):
+    #     print(xyLoc)
+    #     drone_pos = (int(xyLoc[0]) * TILE_SIZE + (TILE_SIZE-120) // 2, int(xyLoc[1]) * TILE_SIZE + (TILE_SIZE-120) // 2)
+    #     window.blit(self.droneImg, drone_pos)

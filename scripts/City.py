@@ -15,6 +15,8 @@ import threading
 WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 1024
 TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
 WHITE = (255, 255, 255)
+X_DISTANCE = 70
+Y_DISTANCE = 70
 
 # Alternative separate drone and bot functionality in separate roslaunch
 DEMO = "TURTLEBOT"
@@ -29,7 +31,6 @@ class City:
         self.drone = None
         self.botLocationPub = rospy.Publisher("/Spiderman/Location", String, queue_size=1)
         self.droneLocationPub = rospy.Publisher("/SpideyDrone/location", String, queue_size=1)
-        self
         if (DEMO == "TURTLEBOT"):
             self.bot = TurtleBot()
         elif (DEMO == "SPIDEYDRONE"):
@@ -40,10 +41,10 @@ class City:
         self.map = Map()
         # self.map.print_map()
 
-        self.window = window        
-        # Start the GUI in a separate thread
-        self.gui_thread = threading.Thread(target=self.run_pygame)
-        self.gui_thread.start()
+        # self.window = window        
+        # # Start the GUI in a separate thread
+        # self.gui_thread = threading.Thread(target=self.run_pygame)
+        # self.gui_thread.start()
 
 
         self.direction_map = {
@@ -106,17 +107,22 @@ class City:
         rate = rospy.Rate(10)
         try:
             while not rospy.is_shutdown():
-                self.localize_april_tag()
-                # self.bot.avoid_collisions()
+                self.bot.avoid_collisions()
                 available_streets = self.bot.find_streets()
+                self.localize_april_tag()
                 print("Available streets: ", available_streets)
-                # selected_street = inputs: ", available_streets)
                 selected_street = input("Select a street angle (0, 90, 180, etc.): ")
                 self.bot.rotate_to(math.radians(float(selected_street)))
-                # self.bot.move_to(s)
+                print(f"the bots direction {self.direction_map.get(self.bot.getTagID())}")
+                print(f"The current intersection {self.lastIntersection}")
+
+                route = self.map.find_shortest_path(self.lastIntersection, "Third and Sixth")
+                print(route)
+                #self.bot.move_to(s)
                 # if (self.bot.translation_vector is not None) and (self.bot.get_distance_to_tag() > 0.7):
                 #     self.bot.move_toward_tag()
-                # # else (self.bot.translation_vector is not None) and (self.distance < 0.7):
+                # elif (self.bot.translation_vector is not None) and (self.distance < 0.7):
+                #     pass
                 # else:
                 #     self.bot.rotate_by_angle(90)
                 rate.sleep()
@@ -190,24 +196,18 @@ class City:
             tag_id = self.drone.getTagID()
         else:
             print("Neither drone or bot initialised")
-        self.tagId = tag_id
+        self.tagId = self.bot.getTagID()
+        self.lastTag = self.bot.last_tag_id
+        self.last2Tags.append(self.lastTag)
+        self.last2Tags.append(self.tagId)
         self.direction = self.direction_map.get(tag_id, "Unknown direction")
         self.street = self.street_map.get(tag_id, "Unknown street")
-
+        print(f"this is current tag id: {self.tagId}")
+        print(f"this is the last tage?? {self.lastTag}")
+        print(f'these are the last two tags {self.last2Tags}')
         # If the tag is different from the last one, update the last 2 tags
-        if (tag_id != self.lastTag and tag_id not in self.last2Tags):
-            self.last2Tags.append(tag_id)
-            # Keep only the last 2 tags
-            if len(self.last2Tags) > 2:
-                self.last2Tags.pop(0)
-            # If the last tag was detected more than 5 seconds ago, remove it
-            # This is to avoid having the same tag twice in the last 2 tags
-            # and to allow time to make a turn onto a new street
-            if self.lastTime is not None:
-                if time.time() - self.lastTime > 20 and len(self.last2Tags) == 2:
-                    self.last2Tags.pop(0)
-            self.lastTag = tag_id
-            self.lastTime = time.time()
+        while len(self.last2Tags) > 2:
+            self.last2Tags.pop(0)
 
         if len(self.last2Tags) == 2:
             # Pass the last 2 tags to the street dictionary
