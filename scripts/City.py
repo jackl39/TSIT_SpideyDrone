@@ -16,8 +16,6 @@ import threading
 WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 1024
 TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
 WHITE = (255, 255, 255)
-X_DISTANCE = 70
-Y_DISTANCE = 70
 
 # Alternative separate drone and bot functionality in separate roslaunch
 DEMO = "TURTLEBOT"
@@ -40,12 +38,12 @@ class City:
         else:
             print("Demo type not set")
         self.map = Map()
-        # self.map.print_map()
+        self.map.print_map()
 
-        # self.window = window        
-        # # Start the GUI in a separate thread
-        # self.gui_thread = threading.Thread(target=self.run_pygame)
-        # self.gui_thread.start()
+        self.window = window        
+        # Start the GUI in a separate thread
+        self.gui_thread = threading.Thread(target=self.run_pygame)
+        self.gui_thread.start()
 
 
         self.direction_map = {
@@ -98,7 +96,7 @@ class City:
         }
 
         self.lastTag = None
-        self.direction = None
+        self.bot.direction = None
         self.street = None
         self.lastIntersection = None
         self.last2Tags = []
@@ -114,7 +112,7 @@ class City:
                 print(f"the bots direction {self.direction_map.get(self.bot.getTagID())}")
                 print(f"The current intersection {self.lastIntersection}")
 
-                route = self.map.find_shortest_path(self.lastIntersection, "Second and Fifth")
+                route = self.map.find_shortest_path(self.lastIntersection, "Third and Fourth")
                 print(route)
                 curr_inter = self.lastIntersection
                 for inter in route:
@@ -124,15 +122,17 @@ class City:
                         angle = self.determine_movement(curr_inter, inter)
                         print(angle)
                         self.bot.rotate_by_angle(angle)
-                        return
-                #self.bot.move_to(s)
-                # if (self.bot.translation_vector is not None) and (self.bot.get_distance_to_tag() > 0.7):
-                #     self.bot.move_toward_tag()
-                # elif (self.bot.translation_vector is not None) and (self.distance < 0.7):
-                #     pass
-                # else:
-                #     self.bot.rotate_by_angle(90)
-                rate.sleep()
+                        start_time = time.time()
+                        while time.time() - start_time < 2:
+                            pass
+                        self.localize_april_tag()
+                        self.bot.move_toward_tag()
+                        self.bot.set_speeds(0, 0, 0)
+                        self.lastIntersection = inter
+                        self.bot.intersection = inter
+                        curr_inter = inter
+
+                return
         except:
             rospy.ROSInterruptException
             pass
@@ -207,7 +207,7 @@ class City:
         self.lastTag = self.bot.last_tag_id
         self.last2Tags.append(self.lastTag)
         self.last2Tags.append(self.tagId)
-        self.direction = self.direction_map.get(tag_id, "Unknown direction")
+        self.bot.direction = self.direction_map.get(tag_id, "Unknown direction")
         self.street = self.street_map.get(tag_id, "Unknown street")
         print(f"this is current tag id: {self.tagId}")
         print(f"this is the last tage?? {self.lastTag}")
@@ -232,7 +232,7 @@ class City:
             lastIntersectionToPrint = "No intersection visited yet"
         else:
             lastIntersectionToPrint = self.lastIntersection
-        print(f"Direction: {self.direction}, Street: {self.street}, Intersection: {lastIntersectionToPrint}")
+        print(f"Direction: {self.bot.direction}, Street: {self.street}, Intersection: {lastIntersectionToPrint}")
         # Update positions in bot and drone so that they can be drawn in GUI
         if (self.lastIntersection is not None):
             if self.bot is not None:
@@ -250,33 +250,37 @@ class City:
         x_move = next_coord[1] - curr_coord[1]
         next_dir = None
         if x_move > 0:
-            next_dir = 1
-        elif x_move < 0:
             next_dir = 3
+        elif x_move < 0:
+            next_dir = 1
         elif y_move > 0:
             next_dir = 2
         elif y_move < 0:
             next_dir = 0
 
         curr_dir = 0
-        if self.direction == "North":
+        if self.bot.direction == "North":
             curr_dir = 0
-        elif self.direction == "South":
+        elif self.bot.direction == "South":
             curr_dir = 2
-        elif self.direction == "East":
+        elif self.bot.direction == "East":
             curr_dir = 3
-        elif self.direction == "West":
+        elif self.bot.direction == "West":
             curr_dir = 1
+        
+        print(self.bot.direction)
+        print(curr_dir)
+        print(next_dir)
 
-        print(f"CUrrent direction: {self.direction}")
+        print(f"CUrrent direction: {self.bot.direction}")
         print(f"desired direction number: {next_dir}")
 
         clockwise = (next_dir - curr_dir) % 4
         anticlockwise = (curr_dir - next_dir) % 4
         if clockwise < anticlockwise:
-            return -clockwise * 90
+            return clockwise * 90
         else:
-            return anticlockwise * 90
+            return -anticlockwise * 90
         
 
 

@@ -18,9 +18,11 @@ import time
 
 
 
-# WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 1024
-# GRID_WIDTH, GRID_HEIGHT = 3, 3
-# TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
+WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 1024
+GRID_WIDTH, GRID_HEIGHT = 3, 3
+TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
+X_DISTANCE = 0.84
+Y_DISTANCE = 0.65
 
 CAMERA_MATRIX = np.array([[503.038912, 0.00, 338.40326932],
                           [0.00, 499.01230583, 239.41331672],
@@ -53,6 +55,7 @@ class TurtleBot:
         self.minDist = None
         self.distance = None
         self.intersection = None
+        self.direction = None
 
         # try:
         #     droneImg = pygame.image.load('spider_bot.png').convert()
@@ -164,9 +167,15 @@ class TurtleBot:
 
     def move_toward_tag(self):
         if self.translation_vector is not None:
-            distance = np.linalg.norm(self.translation_vector)
-            while distance > 0.6:
-                x_dot = distance * 0.2
+            start_distance = np.linalg.norm(self.translation_vector)
+            distance = start_distance
+            min_distance = 0
+            if self.direction == "North" or self.direction == "South":
+                min_distance = Y_DISTANCE
+            else:
+                min_distance = X_DISTANCE
+            while abs(start_distance - distance) < min_distance:
+                x_dot = 0.1
                 z_ang = -0.5 * math.atan2(self.translation_vector[0], self.translation_vector[2])
                 self.set_speeds(x_dot, 0, z_ang)
                 self.publish_cmd_vel()
@@ -205,7 +214,25 @@ class TurtleBot:
         #         self.set_speeds(0, 0, 0)
         #         self.publish_cmd_vel()
 
-    # def draw(self, window, xyLoc):
-    #     print(xyLoc)
-    #     drone_pos = (int(xyLoc[0]) * TILE_SIZE + (TILE_SIZE-120) // 2, int(xyLoc[1]) * TILE_SIZE + (TILE_SIZE-120) // 2)
-    #     window.blit(self.droneImg, drone_pos)
+    def Adress2Coords(self, val):
+        mydic = {
+            (0, 0): "First and Fourth",
+            (0, 1): "First and Fifth",
+            (0, 2): "First and Sixth",
+            (1, 0): "Second and Fourth",
+            (1, 1): "Second and Fifth",
+            (1, 2): "Second and Sixth",
+            (2, 0): "Third and Fourth",
+            (2, 1): "Third and Fifth",
+            (2, 2): "Third and Sixth"
+        }
+
+        for key, value in mydic.items():
+            if val == value:
+                return key
+
+    def draw(self, window, xyLoc):
+        xyLoc = self.Adress2Coords(self.intersection)
+        if xyLoc != None:
+            drone_pos = (int(xyLoc[0]) * TILE_SIZE + (TILE_SIZE-120) // 2, int(xyLoc[1]) * TILE_SIZE + (TILE_SIZE-120) // 2)
+            window.blit(self.droneImg, drone_pos)
