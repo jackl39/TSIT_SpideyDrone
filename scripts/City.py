@@ -16,6 +16,7 @@ class City:
         self.map = Map()
         self.villainFeedTransmitter = Drone2CNN()
         self.map.print_map()
+        
 
         self.direction_map = {
             0: "North", 1: "North", 2: "North",

@@ -32,9 +32,6 @@ class SpideyDrone:
         # Create a CvBridge to convert ROS images to OpenCV format
         self.bridge = CvBridge()
 
-        # Create AprilTag detector object
-        self.detectorDrone = apriltag.Detector()
-
         self.lastTag = None
         self.direction = None
         self.street = None
@@ -56,48 +53,50 @@ class SpideyDrone:
 
     def droneFeedCallback(self, data):
         try:
-            cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
-            self.droneFeedVillainPub(cv_image)
+            detectorDrone = apriltag.Detector()
 
+            cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
             gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
             # Detect AprilTags in the image
-            results = self.detectorDrone.detect(gray)
+            results = detectorDrone.detect(gray)
 
-            if results is not None:
-                # Draw results and calculate the pose
-                for result in results:
-                    (ptA, ptB, ptC, ptD) = result.corners
-                    ptA = (int(ptA[0]), int(ptA[1]))
-                    ptB = (int(ptB[0]), int(ptB[1]))
-                    ptC = (int(ptC[0]), int(ptC[1]))
-                    ptD = (int(ptD[0]), int(ptD[1]))
+            tag_detected = False
+            for result in results:
+                tag_detected = True
+                (ptA, ptB, ptC, ptD) = result.corners
+                ptA = (int(ptA[0]), int(ptA[1]))
+                ptB = (int(ptB[0]), int(ptB[1]))
+                ptC = (int(ptC[0]), int(ptC[1]))
+                ptD = (int(ptD[0]), int(ptD[1]))
 
-                    cv2.line(gray, ptA, ptB, (0, 255, 0), 2)
-                    cv2.line(gray, ptB, ptC, (0, 255, 0), 2)
-                    cv2.line(gray, ptC, ptD, (0, 255, 0), 2)
-                    cv2.line(gray, ptD, ptA, (0, 255, 0), 2)
+                cv2.line(cv_image, ptA, ptB, (0, 255, 0), 2)
+                cv2.line(cv_image, ptB, ptC, (0, 255, 0), 2)
+                cv2.line(cv_image, ptC, ptD, (0, 255, 0), 2)
+                cv2.line(cv_image, ptD, ptA, (0, 255, 0), 2)
 
-                    self.tag_id = result.tag_id
-                    cv2.putText(gray, f"ID: {self.tag_id}", (ptA[0], ptA[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                self.tag_id = result.tag_id
+                cv2.putText(cv_image, f"ID: {self.tag_id}", (ptA[0], ptA[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
-                    fx, fy, cx, cy = CAMERA_MATRIX[0, 0], CAMERA_MATRIX[1, 1], CAMERA_MATRIX[0, 2], CAMERA_MATRIX[1, 2]
-                    pose, e0, e1 = self.detectorDrone.detection_pose(result, (fx, fy, cx, cy), TAG_SIZE)
+                fx, fy, cx, cy = CAMERA_MATRIX[0, 0], CAMERA_MATRIX[1, 1], CAMERA_MATRIX[0, 2], CAMERA_MATRIX[1, 2]
+                pose, e0, e1 = detectorDrone.detection_pose(result, (fx, fy, cx, cy), TAG_SIZE)
 
-                    # Check if pose estimation is valid before proceeding
-                    if pose is not None and pose.shape == (4, 4):  # Ensuring the pose matrix is 4x4
-                        R = pose[:3, :3]  # Extract rotation matrix
-                        t = pose[:3, 3]   # Extract translation vector
-                        self.distance = np.linalg.norm(t)
-                        self.translation_vector = t
-                        cv2.putText(cv_image, f"Distance: {self.distance:.2f}m", (ptA[0], ptA[1] - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                if pose is not None and pose.shape == (4, 4):
+                    R = pose[:3, :3]
+                    t = pose[:3, 3]
+                    self.distance = np.linalg.norm(t)
+                    self.translation_vector = t
+                    cv2.putText(cv_image, f"Distance: {self.distance:.2f}m", (ptA[0], ptA[1] - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-                    else:
-                        self.translation_vector = None
-                        print("No April tag detected")
-                        # Display the frame
-                        imageAprilTag = CvBridge().cv2_to_imgmsg(cv_image, encoding="bgr8")
-                        self.droneFeedAprilTagPub.publish(imageAprilTag)
+            if tag_detected or len(results) == 0:
+                imageAprilTag = self.bridge.cv2_to_imgmsg(cv_image, encoding="bgr8")
+                self.droneFeedAprilTagPub.publish(imageAprilTag)
+            else:
+                print("No April tag detected")
+
+            ros_image_message = self.bridge.cv2_to_imgmsg(cv_image, "bgr8")
+            # self.droneFeedVillainPub.publish(ros_image_message)
 
         except CvBridgeError as e:
-            print("Failed to convert image:", e)
-            return
+            rospy.logerr("Failed to convert image: %s", e)
+        except Exception as ex:
+            rospy.logerr("Unexpected error: %s", ex)
