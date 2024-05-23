@@ -9,20 +9,14 @@ import cv2 as cv
 import numpy as np
 import math
 
-
-### TO DO ###
-    # Extract 
-    # Publish 
-
-### WORKING IN BAG FILE, SUBSCRIBING INCORRECTLY IRL 
-
 colours = []
 inFrame = []
 
 windowCaptureName = 'Video Capture'
 windowDetectionName = 'Object Detection'
 
-frame_pub = rospy.Publisher('/villain/frames', Image, queue_size=1)
+cropped_pub = rospy.Publisher('/villain/cropped', Image, queue_size=1)
+frame_pub = rospy.Publisher('villain/frames', Image, queue_size=1)
     
 
 class colourLimit:
@@ -59,6 +53,7 @@ class detectClassify:
     
 def boundingBox(image, frame, colour):    
     contours, _ = cv.findContours(frame, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    cropped_image = None
     
     if contours:
         # Colour Boundary
@@ -79,14 +74,14 @@ def boundingBox(image, frame, colour):
         vH = h // 2
 
         cv.rectangle(image, (vX, vY), (vX + vW, vY + vH), (255, 0, 0), 2)
-        image = image[vY: vY + vH, vX : vX + vW]
+        cropped_image = image[vY: vY + vH, vX : vX + vW]
         #print(f'X points ({vX},{vH}), Y points {vY, vW}')
 
         ### TO DO ###
         # Extract 
         # Publish 
                     
-    return image
+    return image, cropped_image
 
 def colourThreshold(image):
     inFrame.clear()
@@ -99,10 +94,13 @@ def colourThreshold(image):
         for colour in colours: 
             thresholdImage = cv.inRange(frameHSV, colour.lower, colour.upper)  
             mask = cv.bitwise_or(mask, thresholdImage)
-        image = boundingBox(image, mask, "Villain")   
+        image, cropped = boundingBox(image, mask, "Villain")   
         img_mgs = CvBridge().cv2_to_imgmsg(image, "bgr8")
-
         frame_pub.publish(img_mgs)
+
+        if isinstance(cropped, np.ndarray):
+            cropped_msg = CvBridge().cv2_to_imgmsg(cropped, "bgr8")
+            cropped_pub.publish(cropped_msg)
 
 
 # Main
