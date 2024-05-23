@@ -3,20 +3,37 @@
 import time
 import rospy
 from TurtleBot import TurtleBot
-from Map import Map
+from Map import Map, GRID_WIDTH
 from SpideyDrone import SpideyDrone
 from Drone2CNN import Drone2CNN
+from Intersection import Intersection, Status
+import pygame
+import threading
+
+WINDOW_WIDTH, WINDOW_HEIGHT = 2048, 2048
+TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
+window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+WHITE = (255, 255, 255)
 
 class City:
 
     def __init__(self):
         print("City Initialised")
+        # Pygame initialization
+        pygame.init()
+        self.screen = pygame.display.set_mode((2048, 2048))
+        pygame.display.set_caption("City Visualization")
+        
+        # Start the GUI in a separate thread
+        self.gui_thread = threading.Thread(target=self.run_pygame)
+        self.gui_thread.start()
+        
         self.bot = TurtleBot()
         self.drone = SpideyDrone()
         self.map = Map()
         self.villainFeedTransmitter = Drone2CNN()
         self.map.print_map()
-        
+
 
         self.direction_map = {
             0: "North", 1: "North", 2: "North",
@@ -61,6 +78,53 @@ class City:
         self.lastIntersection = None
         self.last2Tags = []
         self.lastTime = None
+
+    def get_color_based_on_status(self, status):
+        # Define colors
+        GREEN = (0, 255, 0)
+        RED = (255, 0, 0)
+        GOLD = (255, 215, 0)  # Color for 'Goal'
+        GRAY = (192, 192, 192)  # Color for 'Unknown'
+
+        # Determine the color based on the status using methods from the Status class
+        if status.is_safe():
+            return GREEN
+        elif status.is_unsafe():
+            return RED
+        elif status.is_goal():
+            return GOLD
+        else:
+            return GRAY
+        
+    def run_pygame(self):
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+            window.fill(WHITE)
+            for x in range(self.map.grid_width):
+                for y in range(self.map.grid_height):
+                    intersection = self.map.grid[x][y]
+                    window.blit(Intersection.intersection_image, (x * TILE_SIZE, y * TILE_SIZE))
+                    if Map.grid[x][y]:
+                        # Create a separate surface for the circle with an alpha channel
+                        circle_surface = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+                        color = self.get_color_based_on_status(intersection.status)
+                        alpha_value = 128  # 50% transparency
+                        transparent_color = color + (alpha_value,)
+                        radius = TILE_SIZE
+                        pygame.draw.circle(circle_surface, transparent_color, (TILE_SIZE // 2, TILE_SIZE // 2), radius)
+                        window.blit(circle_surface, (x * TILE_SIZE, y * TILE_SIZE))
+
+            self.draw_drones_and_bots()
+
+            # Update the display
+            pygame.display.flip()
+            pygame.time.wait(100)  # Update every 100 milliseconds
+
+        pygame.quit()
 
     def localize_april_tag(self):
         tag_id = self.bot.getTagID()
