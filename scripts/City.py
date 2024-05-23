@@ -103,24 +103,21 @@ class City:
                 if event.type == pygame.QUIT:
                     running = False
 
+            # Visalise the map and indicate each intersections status
             window.fill(WHITE)
             for x in range(self.map.grid_width):
                 for y in range(self.map.grid_height):
                     intersection = self.map.grid[x][y]
-                    window.blit(Intersection.intersection_image, (x * TILE_SIZE, y * TILE_SIZE))
-                    if Map.grid[x][y]:
-                        # Create a separate surface for the circle with an alpha channel
-                        circle_surface = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+                    if intersection:
+                        window.blit(intersection.intersection_image, (x * TILE_SIZE, y * TILE_SIZE))
                         color = self.get_color_based_on_status(intersection.status)
-                        alpha_value = 128  # 50% transparency
+                        alpha_value = 128
+                        circle_surface = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
                         transparent_color = color + (alpha_value,)
-                        radius = TILE_SIZE
+                        radius = TILE_SIZE // 3
                         pygame.draw.circle(circle_surface, transparent_color, (TILE_SIZE // 2, TILE_SIZE // 2), radius)
                         window.blit(circle_surface, (x * TILE_SIZE, y * TILE_SIZE))
 
-            self.draw_drones_and_bots()
-
-            # Update the display
             pygame.display.flip()
             pygame.time.wait(100)  # Update every 100 milliseconds
 
