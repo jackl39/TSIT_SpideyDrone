@@ -28,6 +28,7 @@ class Drone2CNN:
         self.ws_thread = threading.Thread(target=self.ws.run_forever)
         self.ws_thread.daemon = True
         self.ws_thread.start()
+        self.lastVillain = None
 
     def on_image_received(self, data):
         try:
@@ -50,7 +51,7 @@ class Drone2CNN:
 
     def on_websocket_message(self, ws, message):
         print("Received message from WebSocket: " + message)
-
+        self.string_publisher.publish(message)
     def on_websocket_error(self, ws, error):
         print("WebSocket error: " + str(error))
 

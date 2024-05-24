@@ -9,10 +9,6 @@ import numpy as np
 from std_msgs.msg import Empty
 import pygame
 
-WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 1024
-GRID_WIDTH, GRID_HEIGHT = 3, 3
-TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
-
 # Camera calibration parameters
 CAMERA_MATRIX = np.array([
     [929.562627, 0.0, 487.474037],
