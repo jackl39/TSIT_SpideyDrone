@@ -10,24 +10,24 @@ class Map:
     def __init__(self):
         print("Map Initialised")
         self.intersections = {
-            (0, 3): "First and Fourth", (3, 0): "First and Fourth",
-            (0, 4): "First and Fifth", (4, 0): "First and Fifth",
-            (0, 5): "First and Sixth", (5, 0): "First and Sixth",
-            (1, 3): "Second and Fourth", (3, 1): "Second and Fourth",
-            (1, 4): "Second and Fifth", (4, 1): "Second and Fifth",
-            (1, 5): "Second and Sixth", (5, 1): "Second and Sixth",
-            (2, 3): "Third and Fourth", (3, 2): "Third and Fourth",
-            (2, 4): "Third and Fifth", (4, 2): "Third and Fifth",
-            (2, 5): "Third and Sixth", (5, 2): "Third and Sixth"
+            (0, 3): "First and First", (3, 0): "First and First",
+            (0, 4): "First and Second", (4, 0): "First and Second",
+            (0, 5): "First and Third", (5, 0): "First and Third",
+            (1, 3): "Second and First", (3, 1): "Second and First",
+            (1, 4): "Second and Second", (4, 1): "Second and Second",
+            (1, 5): "Second and Third", (5, 1): "Second and Third",
+            (2, 3): "Third and First", (3, 2): "Third and First",
+            (2, 4): "Third and Second", (4, 2): "Third and Second",
+            (2, 5): "Third and Third", (5, 2): "Third and Third"
         }
         
         self.street_map = {
-            0: "1st Street", 8: "1st Street",
-            1: "2nd Street", 7: "2nd Street",
-            2: "3rd Street", 6: "3rd Street",
-            3: "4th Street", 11: "4th Street",
-            4: "5th Street", 10: "5th Street",
-            5: "6th Street", 9: "6th Street"
+            0: "1st St", 8: "1st St",
+            1: "2nd St", 7: "2nd St",
+            2: "3rd St", 6: "3rd St",
+            3: "1st Ave", 11: "1st Ave",
+            4: "2nd Ave", 10: "2nd Ave",
+            5: "3rd Ave", 9: "3rd Ave"
         }
         
         self.intersectionsLs = []
@@ -50,15 +50,15 @@ class Map:
     
     def Adress2Coords(self, val):
         mydic = {
-            (0, 0): "First and Fourth",
-            (0, 1): "First and Fifth",
-            (0, 2): "First and Sixth",
-            (1, 0): "Second and Fourth",
-            (1, 1): "Second and Fifth",
-            (1, 2): "Second and Sixth",
-            (2, 0): "Third and Fourth",
-            (2, 1): "Third and Fifth",
-            (2, 2): "Third and Sixth"
+            (0, 0): "First and First",
+            (0, 1): "First and Second",
+            (0, 2): "First and Third",
+            (1, 0): "Second and First",
+            (1, 1): "Second and Second",
+            (1, 2): "Second and Third",
+            (2, 0): "Third and First",
+            (2, 1): "Third and Second",
+            (2, 2): "Third and Third"
         }
 
         for key, value in mydic.items():
@@ -67,15 +67,15 @@ class Map:
             
     def coords2address(self, key):
         mydic = {
-            (0, 0): "First and Fourth",
-            (0, 1): "First and Fifth",
-            (0, 2): "First and Sixth",
-            (1, 0): "Second and Fourth",
-            (1, 1): "Second and Fifth",
-            (1, 2): "Second and Sixth",
-            (2, 0): "Third and Fourth",
-            (2, 1): "Third and Fifth",
-            (2, 2): "Third and Sixth"
+            (0, 0): "First and First",
+            (0, 1): "First and Second",
+            (0, 2): "First and Third",
+            (1, 0): "Second and First",
+            (1, 1): "Second and Second",
+            (1, 2): "Second and Third",
+            (2, 0): "Third and First",
+            (2, 1): "Third and Second",
+            (2, 2): "Third and Third"
         }
 
         for k, value in mydic.items():

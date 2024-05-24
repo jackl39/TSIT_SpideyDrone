@@ -54,45 +54,45 @@ class City:
         }
 
         self.street_map = {
-            0: "1st Street", 8: "1st Street",
-            1: "2nd Street", 7: "2nd Street",
-            2: "3rd Street", 6: "3rd Street",
-            3: "4th Street", 11: "4th Street",
-            4: "5th Street", 10: "5th Street",
-            5: "6th Street", 9: "6th Street"
+            0: "1st St", 8: "1st St",
+            1: "2nd St", 7: "2nd St",
+            2: "3rd St", 6: "3rd St",
+            3: "1st Ave", 11: "1st Ave",
+            4: "2nd Ave", 10: "2nd Ave",
+            5: "3rd Ave", 9: "3rd Ave"
         }
 
         self.street_numbers = {
-            "1st Street" : 0,
-            "2nd Street" : 1,
-            "3rd Street" : 2,
-            "4th Street" : 3, 
-            "5th Street" : 4,
-            "6th Street" : 5
+            "1st St" : 0,
+            "2nd St" : 1,
+            "3rd St" : 2,
+            "1st Ave" : 3, 
+            "2nd Ave" : 4,
+            "3rd Ave" : 5
         }
 
         self.intersections = {
-            (0, 3): "First and Fourth", (3, 0): "First and Fourth",
-            (0, 4): "First and Fifth", (4, 0): "First and Fifth",
-            (0, 5): "First and Sixth", (5, 0): "First and Sixth",
-            (1, 3): "Second and Fourth", (3, 1): "Second and Fourth",
-            (1, 4): "Second and Fifth", (4, 1): "Second and Fifth",
-            (1, 5): "Second and Sixth", (5, 1): "Second and Sixth",
-            (2, 3): "Third and Fourth", (3, 2): "Third and Fourth",
-            (2, 4): "Third and Fifth", (4, 2): "Third and Fifth",
-            (2, 5): "Third and Sixth", (5, 2): "Third and Sixth"
+            (0, 3): "First and First", (3, 0): "First and First",
+            (0, 4): "First and Second", (4, 0): "First and Second",
+            (0, 5): "First and Third", (5, 0): "First and Third",
+            (1, 3): "Second and First", (3, 1): "Second and First",
+            (1, 4): "Second and Second", (4, 1): "Second and Second",
+            (1, 5): "Second and Third", (5, 1): "Second and Third",
+            (2, 3): "Third and First", (3, 2): "Third and First",
+            (2, 4): "Third and Second", (4, 2): "Third and Second",
+            (2, 5): "Third and Third", (5, 2): "Third and Third"
         }
 
         self.intersectionsToDraw = {
-            "First and Fourth" : [0, 0],
-            "First and Fifth" : [1, 0],
-            "First and Sixth" : [2, 0],
-            "Second and Fourth" : [0, 1],
-            "Second and Fifth" : [1, 1],
-            "Second and Sixth" : [2, 1],
-            "Third and Fourth" : [0, 2],
-            "Third and Fifth" : [1, 2],
-            "Third and Sixth" : [2, 2]
+            "First and First" : [0, 0],
+            "First and Second" : [1, 0],
+            "First and Third" : [2, 0],
+            "Second and First" : [0, 1],
+            "Second and Second" : [1, 1],
+            "Second and Third" : [2, 1],
+            "Third and First" : [0, 2],
+            "Third and Second" : [1, 2],
+            "Third and Third" : [2, 2]
         }
 
         self.lastTag = None
@@ -112,7 +112,7 @@ class City:
                 print(f"the bots direction {self.direction_map.get(self.bot.getTagID())}")
                 print(f"The current intersection {self.lastIntersection}")
 
-                route = self.map.find_shortest_path(self.lastIntersection, "Third and Fourth")
+                route = self.map.find_shortest_path(self.lastIntersection, "First and Third")
                 print(route)
                 curr_inter = self.lastIntersection
                 for inter in route:

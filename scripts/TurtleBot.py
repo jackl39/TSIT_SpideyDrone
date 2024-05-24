@@ -216,15 +216,15 @@ class TurtleBot:
 
     def Adress2Coords(self, val):
         mydic = {
-            (0, 0): "First and Fourth",
-            (0, 1): "First and Fifth",
-            (0, 2): "First and Sixth",
-            (1, 0): "Second and Fourth",
-            (1, 1): "Second and Fifth",
-            (1, 2): "Second and Sixth",
-            (2, 0): "Third and Fourth",
-            (2, 1): "Third and Fifth",
-            (2, 2): "Third and Sixth"
+            (0, 0): "First and First",
+            (0, 1): "First and Second",
+            (0, 2): "First and Third",
+            (1, 0): "Second and First",
+            (1, 1): "Second and Second",
+            (1, 2): "Second and Third",
+            (2, 0): "Third and First",
+            (2, 1): "Third and Second",
+            (2, 2): "Third and Third"
         }
 
         for key, value in mydic.items():
