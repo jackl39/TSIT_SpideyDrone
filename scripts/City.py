@@ -106,7 +106,6 @@ class City:
         rate = rospy.Rate(10)
         try:
             while not rospy.is_shutdown():
-                self.bot.avoid_collisions()
                 available_streets = self.bot.find_streets()
                 self.localize_april_tag()
                 print(f"the bots direction {self.direction_map.get(self.bot.getTagID())}")
