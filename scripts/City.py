@@ -10,8 +10,24 @@ class City:
 
     def __init__(self):
         print("City Initialised")
+<<<<<<< Updated upstream
         self.bot = TurtleBot()
         self.drone = SpideyDrone()
+=======
+
+        self.bot = None
+        self.drone = None
+        self.botLocationPub = rospy.Publisher("/Spiderman/Location", String, queue_size=1)
+        self.droneLocationPub = rospy.Publisher("/SpideyDrone/location", String, queue_size=1)
+        self.goal_node_sub = rospy.Subscriber("/intersection", String, self.goal_node_callback)
+        if (DEMO == "TURTLEBOT"):
+            self.bot = TurtleBot()
+        elif (DEMO == "SPIDEYDRONE"):
+            self.drone = SpideyDrone()
+            self.villainFeedTransmitter = Drone2CNN()
+        else:
+            print("Demo type not set")
+>>>>>>> Stashed changes
         self.map = Map()
         self.map.print_map()
 
@@ -58,7 +74,111 @@ class City:
         self.lastIntersection = None
         self.last2Tags = []
         self.lastTime = None
+        self.goal_node = None
+        
 
+<<<<<<< Updated upstream
+=======
+    def run(self):
+        rate = rospy.Rate(10)
+        try:
+            while not rospy.is_shutdown():
+                self.bot.avoid_collisions()
+                available_streets = self.bot.find_streets()
+                self.localize_april_tag()
+                print(f"the bots direction {self.direction_map.get(self.bot.getTagID())}")
+                print(f"The current intersection {self.lastIntersection}")
+                while self.goal_node == None:
+                    pass
+                route = self.map.find_shortest_path(self.lastIntersection, self.goal_node)
+                print(route)
+                curr_inter = self.lastIntersection
+                self.bot.intersection = curr_inter
+                for inter in route:
+                    if curr_inter == inter:
+                        pass
+                    elif inter != curr_inter:
+                        angle = self.determine_movement(curr_inter, inter)
+                        print(angle)
+                        self.bot.rotate_by_angle(angle)
+                        start_time = time.time()
+                        while time.time() - start_time < 2:
+                            pass
+                        self.localize_april_tag()
+                        self.bot.move_toward_tag()
+                        self.bot.set_speeds(0, 0, 0)
+                        self.lastIntersection = inter
+                        self.bot.intersection = inter
+                        curr_inter = inter
+
+                return
+        except:
+            rospy.ROSInterruptException
+            pass
+        finally:
+            if self.drone is not None:
+                self.villainFeedTransmitter.shutdown()
+            else:
+                print("Exited Gracefully")
+
+    def get_color_based_on_status(self, status):
+        # Define colors
+        GREEN = (0, 255, 0)
+        RED = (255, 0, 0)
+        GOLD = (255, 215, 0)  # Color for 'Goal'
+        GRAY = (192, 192, 192)  # Color for 'Unknown'
+
+        # Determine the color based on the status using methods from the Status class
+        if status.is_safe():
+            return GREEN
+        elif status.is_unsafe():
+            return RED
+        elif status.is_goal():
+            return GOLD
+        else:
+            return GRAY
+        
+    def run_pygame(self):
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+            # Visalise the map and indicate each intersections status
+            self.window.fill(WHITE)
+            for x in range(self.map.grid_width):
+                for y in range(self.map.grid_height):
+                    intersection = self.map.grid[x][y]
+                    if intersection:
+                        self.window.blit(intersection.intersection_image, (x * TILE_SIZE, y * TILE_SIZE))
+                        color = self.get_color_based_on_status(intersection.status)
+                        alpha_value = 128
+                        circle_surface = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+                        transparent_color = color + (alpha_value,)
+                        radius = TILE_SIZE // 3
+                        pygame.draw.circle(circle_surface, transparent_color, (TILE_SIZE // 2, TILE_SIZE // 2), radius)
+                        self.window.blit(circle_surface, (x * TILE_SIZE, y * TILE_SIZE))
+
+            pygame.display.flip()
+            if rospy.is_shutdown():
+                running = False
+            pygame.time.wait(100)  # Update every 100 milliseconds
+            if self.drone is not None:
+                self.drone.draw(self.window, self.intersectionsToDraw.get(self.lastIntersection, None))
+            elif self.bot is not None:
+                self.bot.draw(self.window, self.intersectionsToDraw.get(self.lastIntersection, None))
+            else:
+                print("Neither drone or bot initialised")
+
+            pygame.display.update()
+
+        pygame.quit()
+
+    def goal_node_callback(self, msg):
+        self.goal_node = msg
+
+>>>>>>> Stashed changes
     def localize_april_tag(self):
         tag_id = self.bot.getTagID()
         self.tagId = tag_id
