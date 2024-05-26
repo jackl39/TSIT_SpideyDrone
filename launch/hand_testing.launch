@@ -1,0 +1,12 @@
+<launch>
+    <!-- Launch the cv_camera node -->
+    <node name="cv_camera" pkg="cv_camera" type="cv_camera_node" output="screen">
+        <param name="device_id" value="4" />
+        <param name="image_width" value="640" />
+        <param name="image_height" value="480" />
+        <param name="frame_id" value="camera" />
+    </node>
+
+    <!-- Launch the gesture recognition script -->
+    <node name="gesture_recognition" pkg="TSIT_SpideyDrone" type="gesture_recognition.py" output="screen" />
+</launch>
