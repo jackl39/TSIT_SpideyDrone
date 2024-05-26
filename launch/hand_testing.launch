@@ -9,4 +9,7 @@
 
     <!-- Launch the gesture recognition script -->
     <node name="gesture_recognition" pkg="TSIT_SpideyDrone" type="gesture_recognition.py" output="screen" />
+
+    <!-- Launch the autonomous_turtlebot.py script -->
+    <node name="autonomous_turtlebot" pkg="TSIT_SpideyDrone" type="autonomous_turtlebot.py" output="screen" />
 </launch>

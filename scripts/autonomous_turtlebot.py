@@ -16,6 +16,6 @@ if __name__ == '__main__':
     try:
         window = initialize_pygame()
         city = City(window)
-        city.run()
+        # city.run()
     except rospy.ROSInterruptException:
         pass

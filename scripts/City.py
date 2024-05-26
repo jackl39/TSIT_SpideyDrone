@@ -102,14 +102,15 @@ class City:
         self.last2Tags = []
         self.lastTime = None
 
-    def run(self):
-        rate = rospy.Rate(10)
+        rospy.Subscriber("/gesture_result", String, self.gesture_callback)
+
+    def gesture_callback(self, data):
         try:
-            #UPDATE: GESTURE INPUT
-            street1 = input("Enter street1: \n")
-            street2 = input("Enter street2: \n")
-            target = str(f"{street1} and {street2}")
-            #target = str(input("Enter Streets: \n"))
+            # Extract street1 and street2 from gesture recognition result
+            streets = data.data.split(" and ")
+            street1 = streets[0]
+            street2 = streets[1]
+            target = f"{street1} and {street2}"
 
             while not rospy.is_shutdown():
                 available_streets = self.bot.find_streets()
@@ -137,7 +138,7 @@ class City:
                         self.bot.intersection = inter
                         curr_inter = inter
 
-                return
+            return
         except:
             rospy.ROSInterruptException
             pass
