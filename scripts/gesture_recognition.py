@@ -154,7 +154,7 @@ class CameraSubscriber:
                         rospy.loginfo(f"Avenue updated! street_address={self.street_address} avenue_address={self.avenue_address}")
 
                 if self.street_address and self.avenue_address:
-                    result_message = f"{self.street_address} Street, {self.avenue_address} Ave"
+                    result_message = f"{self.street_address} and {self.avenue_address}"
                     self.result_pub.publish(result_message)
                     rospy.loginfo(f"Published gesture result: {result_message}")
                     # Reset after publishing
