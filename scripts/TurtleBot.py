@@ -42,7 +42,7 @@ class TurtleBot:
         self.lidar_sub = rospy.Subscriber('/scan', LaserScan, queue_size=100, callback=self.lidar_callback)
         self.camera_pub = rospy.Publisher('/spiderBot/AprilTag', Image, queue_size=1)
         self.location_sub = rospy.Subscriber('/Spiderman/Location', String, self.locationCallback)
-        self.Villain = rospy.Subscriber('/Villain', String, callback=self.attack)
+        # self.Villain = rospy.Subscriber('/Villain', String, callback=self.attack)
         
         self.odom = Odometry()
         self.command = Twist()
@@ -238,8 +238,8 @@ class TurtleBot:
             drone_pos = (int(xyLoc[0]) * TILE_SIZE + (TILE_SIZE-120) // 2, int(xyLoc[1]) * TILE_SIZE + (TILE_SIZE-120) // 2)
             window.blit(self.droneImg, drone_pos)
 
-    def attack(self, msg):
-        if msg == "Green Goblin":
-            self.rotate_by_angle(45)
-        elif msg == "Carnage":
-            self.rotate_by_angle(-45)
+    # def attack(self, msg):
+    #     if msg == "Green Goblin":
+    #         self.rotate_by_angle(45)
+    #     elif msg == "Carnage":
+    #         self.rotate_by_angle(-45)

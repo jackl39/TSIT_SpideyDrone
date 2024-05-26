@@ -83,6 +83,8 @@ def colourThreshold(image):
 
     mask = np.zeros(frameHSV.shape[:2], dtype=np.uint8)
 
+    villain_detected = False 
+
     if frameHSV is not None:
         for colour in colours: 
             thresholdImage = cv.inRange(frameHSV, colour.lower, colour.upper)  
@@ -90,6 +92,11 @@ def colourThreshold(image):
         image, cropped = boundingBox(image, mask, "Villain")   
         img_mgs = CvBridge().cv2_to_imgmsg(image, "bgr8")
         frame_pub.publish(img_mgs)
+        
+        # UPDATE: CALL VILLAIN DETECTION
+        if inFrame and not villain_detected: 
+            rospy.loginfo("VILLAIN DETECTED")
+            villain_detected = True
 
         if isinstance(cropped, np.ndarray):
             cropped_msg = CvBridge().cv2_to_imgmsg(cropped, "bgr8") 
@@ -102,13 +109,7 @@ if __name__ == '__main__':
     rospy.init_node('villain_colour')
 
     green = colourLimit(0, np.array([40, 60, 60]), np.array([90, 190, 190]))
-    # red = colourLimit(0, np.array([168, 149, 61]), np.array([179, 255, 255]))  #red
-    # purple = colourLimit(1, np.array([130, 100, 180]), np.array([160, 255, 255]))  #purple 
-    # pink = colourLimit(2, np.array([140, 149, 61]), np.array([168, 255, 255]))
     colours.append(green)
-    # colours.append(purple)
-    # colours.append(pink)
-    
 
     rospy.loginfo("Node has been Initialised")
     rospy.spin()  

@@ -105,13 +105,19 @@ class City:
     def run(self):
         rate = rospy.Rate(10)
         try:
+            #UPDATE: GESTURE INPUT
+            street1 = input("Enter street1: \n")
+            street2 = input("Enter street2: \n")
+            target = str(f"{street1} and {street2}")
+            #target = str(input("Enter Streets: \n"))
+
             while not rospy.is_shutdown():
                 available_streets = self.bot.find_streets()
                 self.localize_april_tag()
                 print(f"the bots direction {self.direction_map.get(self.bot.getTagID())}")
                 print(f"The current intersection {self.lastIntersection}")
 
-                route = self.map.find_shortest_path(self.lastIntersection, "First and Third")
+                route = self.map.find_shortest_path(self.lastIntersection, target)
                 print(route)
                 curr_inter = self.lastIntersection
                 for inter in route:
@@ -139,7 +145,16 @@ class City:
             if self.drone is not None:
                 self.villainFeedTransmitter.shutdown()
             else:
+                ### UPDATE: CELEBRATION
+                self.success_dance()
                 print("Exited Gracefully")
+
+    def success_dance(self):
+                self.bot.set_speeds(0, 0, 50)
+                self.bot.rotate_by_angle(45)
+                self.bot.rotate_by_angle(-45)
+                self.bot.rotate_by_angle(45)
+                self.bot.rotate_by_angle(-45)
 
     def get_color_based_on_status(self, status):
         # Define colors

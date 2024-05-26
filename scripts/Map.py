@@ -93,6 +93,7 @@ class Map:
             print(f"Streets: {value.street1}, {value.street2} Intersection: {value.intersectionName} Neighbours: {value.neighbours}")
 
     def find_shortest_path(self, curr_pos, target):
+
         # Using a priority queue to implement Dijkstra's algorithm
         pq = []
         curr_x, curr_y = self.Adress2Coords(curr_pos)

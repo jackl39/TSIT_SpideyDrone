@@ -12,6 +12,7 @@ def initialize_pygame():
 
 if __name__ == '__main__':
     rospy.init_node('Localiser', anonymous=True)
+
     try:
         window = initialize_pygame()
         city = City(window)
