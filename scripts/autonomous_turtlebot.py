@@ -14,8 +14,8 @@ if __name__ == '__main__':
     rospy.init_node('Localiser', anonymous=True)
 
     try:
-        window = initialize_pygame()
-        city = City(window)
+        #window = initialize_pygame()
+        city = City()
         # city.run()
     except rospy.ROSInterruptException:
         pass

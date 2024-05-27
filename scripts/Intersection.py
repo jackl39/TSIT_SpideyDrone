@@ -12,13 +12,6 @@ class Intersection:
     def __init__(self, street1, street2):
         print("Intersection Initialised")
 
-        try:
-            intersection_image = pygame.image.load('tile_city.jpg').convert()
-            self.intersection_image = pygame.transform.scale(intersection_image, (TILE_SIZE, TILE_SIZE))
-        except Exception as e:
-            print(f"Failed to load intersection_image: {e}")
-            sys.exit()
-
         self.streetsToIntersections = {
             ("1st St", "1st Ave"): "First and First", ("1st Ave", "1st St"): "First and First",
             ("1st St", "2nd Ave"): "First and Second", ("2nd Ave", "1st St"): "First and Second",

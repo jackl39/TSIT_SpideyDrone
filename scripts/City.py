@@ -23,7 +23,7 @@ DEMO = "TURTLEBOT"
 
 class City:
 
-    def __init__(self, window):
+    def __init__(self):
         print("City Initialised")
 
         self.bot = None
@@ -40,10 +40,10 @@ class City:
         self.map = Map()
         self.map.print_map()
 
-        self.window = window        
+        #self.window = window        
         # Start the GUI in a separate thread
-        self.gui_thread = threading.Thread(target=self.run_pygame)
-        self.gui_thread.start()
+        # self.gui_thread = threading.Thread(target=self.run_pygame)
+        # self.gui_thread.start()
 
 
         self.direction_map = {
@@ -103,6 +103,7 @@ class City:
         self.lastTime = None
 
         rospy.Subscriber("/gesture_result", String, self.gesture_callback)
+        rospy.spin()
 
     def gesture_callback(self, data):
         try:
@@ -137,6 +138,9 @@ class City:
                         self.lastIntersection = inter
                         self.bot.intersection = inter
                         curr_inter = inter
+                self.success_dance()
+                print("Exited Gracefully")
+                return
 
             return
         except:
@@ -151,7 +155,7 @@ class City:
                 print("Exited Gracefully")
 
     def success_dance(self):
-                self.bot.set_speeds(0, 0, 50)
+                self.bot.set_speeds(0, 0, 100)
                 self.bot.rotate_by_angle(45)
                 self.bot.rotate_by_angle(-45)
                 self.bot.rotate_by_angle(45)
@@ -174,7 +178,7 @@ class City:
         else:
             return GRAY
         
-    def run_pygame(self):
+    # def run_pygame(self):
         running = True
         while running:
             for event in pygame.event.get():

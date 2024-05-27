@@ -155,6 +155,8 @@ class CameraSubscriber:
 
                 if self.street_address and self.avenue_address:
                     result_message = f"{self.street_address} and {self.avenue_address}"
+                    # while self.result_pub.get_num_connections < 1:
+                    #     pass
                     self.result_pub.publish(result_message)
                     rospy.loginfo(f"Published gesture result: {result_message}")
                     # Reset after publishing
