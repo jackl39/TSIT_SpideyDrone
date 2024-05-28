@@ -19,21 +19,20 @@ CAMERA_MATRIX = np.array([[503.038912, 0.00, 338.40326932],
                           [0.00, 499.01230583, 239.41331672],
                           [0.00, 0.00, 1.00]], dtype=np.float64) 
 DIST_COEFFS = np.array([0.21411831, -0.48345064, -0.00170004, 0.02660419, 0.32653534])
-# 0.055 new prints
 TAG_SIZE = 0.08
 
 class TurtleBot:
 
     def __init__(self):
+        # Initialise the TurtleBot with subscriptions to various sensors and publishers for movement commands.
         print("TurtleBot Initialised")
-        self.detector = apriltag.Detector()
-        self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        self.detector = apriltag.Detector() 
         self.odom_sub = rospy.Subscriber('/odom', Odometry, self.odom_callback)
         self.camera_sub = rospy.Subscriber('/camera/image_raw/compressed', CompressedImage, self.camera_callback)
         self.lidar_sub = rospy.Subscriber('/scan', LaserScan, queue_size=100, callback=self.lidar_callback)
-        self.camera_pub = rospy.Publisher('/spiderBot/AprilTag', Image, queue_size=1)
         self.location_sub = rospy.Subscriber('/Spiderman/Location', String, self.locationCallback)
-        # self.Villain = rospy.Subscriber('/Villain', String, callback=self.attack)
+        self.camera_pub = rospy.Publisher('/spiderBot/AprilTag', Image, queue_size=1)
+        self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
         
         self.odom = Odometry()
         self.command = Twist()
@@ -50,18 +49,22 @@ class TurtleBot:
         self.direction = None
 
     def getTagID(self):
+        # Returns the most recently detected tag ID
         return self.tag_id
 
     def odom_callback(self, odom_data):
+        # Updates the bot's position and orientation based on odometry data.
         self.odom = odom_data
         self.update_pose()
 
     def lidar_callback(self, data):
+        # Processes lidar data to find the minimum detectable distance, avoiding obstacles.
         self.lidar_data = data.ranges
         distances = [distance for distance in data.ranges if distance > 0]
         self.minDist = min(distances)
 
     def camera_callback(self, cam_data):
+        # Processes camera images to detect AprilTags and calculate their pose.
         np_arr = np.frombuffer(cam_data.data, np.uint8)
         frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
         undistorted_frame = cv2.undistort(frame, CAMERA_MATRIX, DIST_COEFFS)
@@ -108,9 +111,11 @@ class TurtleBot:
         self.camera_pub.publish(image)
 
     def locationCallback(self, msg):
+        # Updates the bot's known location based on external location messages.
         self.intersection = msg
 
     def update_pose(self):
+        # Updates the bot's internal pose representation from odometry data.
         self.x = self.odom.pose.pose.position.x
         self.y = self.odom.pose.pose.position.y
         orientation = self.odom.pose.pose.orientation
@@ -135,6 +140,7 @@ class TurtleBot:
         self.cmd_vel_pub.publish(self.command)
 
     def rotate_to(self, target_theta):
+        # Rotates the bot to the specified orientation.
         while abs(target_theta - self.theta) > 0.05:
             angular_difference = target_theta - self.theta
             if angular_difference > math.pi:
@@ -151,6 +157,7 @@ class TurtleBot:
         self.publish_cmd_vel()
 
     def move_toward_tag(self):
+        # Moves the bot towards the detected tag, considering a minimum safe distance
         if self.translation_vector is not None:
             start_distance = np.linalg.norm(self.translation_vector)
             distance = start_distance
@@ -181,6 +188,7 @@ class TurtleBot:
         self.rotate_to(target_theta)
 
     def find_streets(self):
+        # Determines which streets are accessible based on the bot's current position and orientation.
         available_streets = []
         for angle in range(0, 360, 90):
             self.rotate_by_angle(90)
@@ -192,6 +200,7 @@ class TurtleBot:
         return available_streets
 
     def Adress2Coords(self, val):
+         # Converts a street address to its corresponding grid coordinates.
         mydic = {
             (0, 0): "First and First",
             (0, 1): "First and Second",
