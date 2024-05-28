@@ -13,8 +13,8 @@ import threading
 class City:
     def __init__(self):
         # Initial setup for the City class. This function initialises the ROS publishers,
-        # sets up the bot or drone depending on the DEMO type, initialises the map,
-        # and subscribes to the ROS topic for gesture results.
+        # sets up the bot, initialises the map, and subscribes to the ROS topic for
+        #  gesture results.
         
         # Initialisation message
         print("City Initialised")
