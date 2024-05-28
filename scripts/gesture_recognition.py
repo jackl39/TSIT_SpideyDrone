@@ -9,7 +9,7 @@ Reference:
 Kazuhito Takahashi, "hand-gesture-recognition-using-mediapipe," 2021. [Online].
 Available: https://github.com/kinivi/hand-gesture-recognition-mediapipe.
 
-Modifications were made by SID:500497618 to extend the functionality of this system,
+Modifications were made to extend the functionality of this system,
 including the translation of recognized gestures into intercept coordinates, which
 are then published to a ROS node. These modifications enable the integration of
 gesture-based commands into broader robotic control systems.
