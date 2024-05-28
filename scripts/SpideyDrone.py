@@ -7,7 +7,6 @@ import apriltag
 import cv2
 import numpy as np
 from std_msgs.msg import Empty
-import pygame
 
 # Camera calibration parameters
 CAMERA_MATRIX = np.array([
