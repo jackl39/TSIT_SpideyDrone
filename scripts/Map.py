@@ -4,8 +4,6 @@ from Intersection import Intersection
 import heapq
 import numpy as np
 
-GRID_WIDTH, GRID_HEIGHT = 3, 3
-
 class Map:
     def __init__(self):
         print("Map Initialised")
@@ -35,7 +33,6 @@ class Map:
         self.grid_height = max(y for x, y in self.intersections.keys()) + 1
         self.grid = [[None for _ in range(self.grid_height)] for _ in range(self.grid_width)]
         self.safe_grid = np.zeros((self.grid_width, self.grid_height))
-        print(f'printing grid {self.grid}')
 
         for y in range(0, 3):
             for x in range(3, 6):
@@ -98,7 +95,7 @@ class Map:
         pq = []
         curr_x, curr_y = self.Adress2Coords(curr_pos)
         current_position = (curr_x, curr_y)
-        heapq.heappush(pq, (0, current_position))  # (cost, position) TODO: ADD IN STARTING SPOT
+        heapq.heappush(pq, (0, current_position))  # (cost, position) 
         distances = {current_position: 0}
         previous_nodes = {current_position: None}
 
