@@ -1,3 +1,14 @@
+"""
+Code Description and Attribution
+--------------------------------
+This script builds upon the hand gesture recognition system originally developed by Kazuhito Takahashi. The initial implementation, detailed in the following citation, utilized MediaPipe to recognize hand gestures:
+
+Reference:
+Kazuhito Takahashi, "hand-gesture-recognition-using-mediapipe," 2021. [Online]. Available: https://github.com/kinivi/hand-gesture-recognition-mediapipe.
+
+Modifications were made by SID:500497618 to extend the functionality of this system, including the translation of recognized gestures into intercept coordinates, which are then published to a ROS node. These modifications enable the integration of gesture-based commands into broader robotic control systems.
+"""
+
 #!/usr/bin/env python3
 
 import rospy
