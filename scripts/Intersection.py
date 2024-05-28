@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
 
 from Status import Status
-import pygame
 import sys
-
-WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 1024
-GRID_WIDTH, GRID_HEIGHT = 3, 3
-TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
 
 class Intersection:
     def __init__(self, street1, street2):
