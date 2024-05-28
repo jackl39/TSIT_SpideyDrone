@@ -1,12 +1,18 @@
 """
 Code Description and Attribution
 --------------------------------
-This script builds upon the hand gesture recognition system originally developed by Kazuhito Takahashi. The initial implementation, detailed in the following citation, utilized MediaPipe to recognize hand gestures:
+This script builds upon the hand gesture recognition system originally developed
+by Kazuhito Takahashi. The initial implementation, detailed in the following
+citation, utilized MediaPipe to recognize hand gestures:
 
 Reference:
-Kazuhito Takahashi, "hand-gesture-recognition-using-mediapipe," 2021. [Online]. Available: https://github.com/kinivi/hand-gesture-recognition-mediapipe.
+Kazuhito Takahashi, "hand-gesture-recognition-using-mediapipe," 2021. [Online].
+Available: https://github.com/kinivi/hand-gesture-recognition-mediapipe.
 
-Modifications were made by SID:500497618 to extend the functionality of this system, including the translation of recognized gestures into intercept coordinates, which are then published to a ROS node. These modifications enable the integration of gesture-based commands into broader robotic control systems.
+Modifications were made by SID:500497618 to extend the functionality of this system,
+including the translation of recognized gestures into intercept coordinates, which
+are then published to a ROS node. These modifications enable the integration of
+gesture-based commands into broader robotic control systems.
 """
 
 #!/usr/bin/env python3
@@ -34,6 +40,10 @@ from model.point_history_classifier.point_history_classifier import PointHistory
 
 class CameraSubscriber:
     def __init__(self):
+        """Initialises the class, setting up ROS subscribers for camera images, publishers
+        for gesture results, and configuration for MediaPipe hand recognition. It also loads
+        classifier labels for gesture recognition."""
+        
         rospy.loginfo("Initializing CameraSubscriber")
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/cv_camera/image_raw", Image, self.image_callback)
@@ -76,6 +86,11 @@ class CameraSubscriber:
         rospy.loginfo("Gesture Recognition Initialized")
 
     def image_callback(self, data):
+        """Callback function for the ROS image subscriber. Processes each frame to detect
+        hand gestures, classifies them, and publishes the recognized gestures. Handles
+        conversion from ROS image messages to OpenCV images, gesture detection, and
+        image flipping."""
+        
         try:
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as e:
@@ -173,6 +188,8 @@ class CameraSubscriber:
                     # Reset after publishing
                     self.street_address = None
                     self.avenue_address = None
+
+# The remaining classes are the same as Takahashi's implementation
 
     def draw_point_history(self, image, point_history):
         for index, point in enumerate(point_history):
