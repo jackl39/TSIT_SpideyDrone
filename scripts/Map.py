@@ -6,7 +6,12 @@ import numpy as np
 
 class Map:
     def __init__(self):
+        # Initialises the Map class. Sets up the intersection grid and other class variables.
+        # Also initialises intersections based on predefined coordinates.
+        
         print("Map Initialised")
+        
+        # predefined intersections with coordinates
         self.intersections = {
             (0, 3): "First and First", (3, 0): "First and First",
             (0, 4): "First and Second", (4, 0): "First and Second",
@@ -19,6 +24,7 @@ class Map:
             (2, 5): "Third and Third", (5, 2): "Third and Third"
         }
         
+        # mapping of indexes to street names
         self.street_map = {
             0: "1st St", 8: "1st St",
             1: "2nd St", 7: "2nd St",
@@ -27,7 +33,8 @@ class Map:
             4: "2nd Ave", 10: "2nd Ave",
             5: "3rd Ave", 9: "3rd Ave"
         }
-        
+
+        # Populate the grid with Intersection objects based on street mapping
         self.intersectionsLs = []
         self.grid_width = max(x for x, y in self.intersections.keys()) + 1
         self.grid_height = max(y for x, y in self.intersections.keys()) + 1
@@ -41,11 +48,13 @@ class Map:
                 self.grid[x-3][y] = intersection
 
     def get_status(self, x, y):
+        # Returns the safety status of an intersection at coordinates (x, y
         if self.grid[x][y]:
             return self.grid[x][y].safe  # Assuming Intersection class has a 'safe' attribute
         return None
     
     def Adress2Coords(self, val):
+        # Converts intersection address to grid coordinates.
         mydic = {
             (0, 0): "First and First",
             (0, 1): "First and Second",
@@ -63,6 +72,7 @@ class Map:
                 return key
             
     def coords2address(self, key):
+        # Converts grid coordinates back to intersection address.
         mydic = {
             (0, 0): "First and First",
             (0, 1): "First and Second",
@@ -80,18 +90,20 @@ class Map:
                 return value
 
     def getIntersection(self, intersectionName):
+        # Retrieves an Intersection object by its name
         for value in self.intersectionsLs:
             if value.intersection == intersectionName:
                 return value
         return None
 
     def print_map(self):
+        # Prints out details of all intersections managed by this map instance.
         for value in self.intersectionsLs:
             print(f"Streets: {value.street1}, {value.street2} Intersection: {value.intersectionName} Neighbours: {value.neighbours}")
 
     def find_shortest_path(self, curr_pos, target):
-
-        # Using a priority queue to implement Dijkstra's algorithm
+        # Implements Dijkstra's algorithm to find the shortest path from current position to target.
+        # Uses a priority queue to manage the open set of nodes to explore
         pq = []
         curr_x, curr_y = self.Adress2Coords(curr_pos)
         current_position = (curr_x, curr_y)
@@ -109,8 +121,10 @@ class Map:
                 break
 
             x, y = current_node
+            # Check neighboring cells in 4 directions
             for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  # Neighboring cells
                 nx, ny = x + dx, y + dy
+                # Ensure within grid bounds and cell is safe
                 if 0 <= nx < self.grid_width and 0 <= ny < self.grid_height and self.safe_grid[nx][ny] == 0:
                     new_cost = current_distance + 1
                     if (nx, ny) not in distances or new_cost < distances[(nx, ny)]:
@@ -118,7 +132,7 @@ class Map:
                         previous_nodes[(nx, ny)] = (x, y)
                         heapq.heappush(pq, (new_cost, (nx, ny)))
 
-        # Reconstruct the path
+         # Reconstruct the path from target to current position
         path = []
         step = (target_x, target_y)
         while step:
