@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 class Status:
+    # Class attributes that define possible status values
     SAFE = "Safe"
     UNSAFE = "Unsafe"
     GOAL = "Goal"
