@@ -9,17 +9,8 @@ from Map import Map, GRID_WIDTH
 from SpideyDrone import SpideyDrone
 from Drone2CNN import Drone2CNN
 from Intersection import Intersection, Status
-import pygame
 import threading
 
-
-WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 1024
-TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
-WHITE = (255, 255, 255)
-
-# Alternative separate drone and bot functionality in separate roslaunch
-DEMO = "TURTLEBOT"
-#DEMO = "SPIDEYDRONE"
 
 class City:
 
@@ -39,12 +30,6 @@ class City:
             print("Demo type not set")
         self.map = Map()
         self.map.print_map()
-
-        #self.window = window        
-        # Start the GUI in a separate thread
-        # self.gui_thread = threading.Thread(target=self.run_pygame)
-        # self.gui_thread.start()
-
 
         self.direction_map = {
             0: "North", 1: "North", 2: "North",
@@ -161,59 +146,6 @@ class City:
                 self.bot.rotate_by_angle(45)
                 self.bot.rotate_by_angle(-45)
 
-    def get_color_based_on_status(self, status):
-        # Define colors
-        GREEN = (0, 255, 0)
-        RED = (255, 0, 0)
-        GOLD = (255, 215, 0)  # Color for 'Goal'
-        GRAY = (192, 192, 192)  # Color for 'Unknown'
-
-        # Determine the color based on the status using methods from the Status class
-        if status.is_safe():
-            return GREEN
-        elif status.is_unsafe():
-            return RED
-        elif status.is_goal():
-            return GOLD
-        else:
-            return GRAY
-        
-    # def run_pygame(self):
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-
-            # Visalise the map and indicate each intersections status
-            self.window.fill(WHITE)
-            for x in range(self.map.grid_width):
-                for y in range(self.map.grid_height):
-                    intersection = self.map.grid[x][y]
-                    if intersection:
-                        self.window.blit(intersection.intersection_image, (x * TILE_SIZE, y * TILE_SIZE))
-                        color = self.get_color_based_on_status(intersection.status)
-                        alpha_value = 128
-                        circle_surface = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
-                        transparent_color = color + (alpha_value,)
-                        radius = TILE_SIZE // 3
-                        pygame.draw.circle(circle_surface, transparent_color, (TILE_SIZE // 2, TILE_SIZE // 2), radius)
-                        self.window.blit(circle_surface, (x * TILE_SIZE, y * TILE_SIZE))
-
-            pygame.display.flip()
-            if rospy.is_shutdown():
-                running = False
-            pygame.time.wait(100)  # Update every 100 milliseconds
-            if self.drone is not None:
-                self.drone.draw(self.window, self.intersectionsToDraw.get(self.lastIntersection, None))
-            elif self.bot is not None:
-                self.bot.draw(self.window, self.intersectionsToDraw.get(self.lastIntersection, None))
-            else:
-                print("Neither drone or bot initialised")
-
-            pygame.display.update()
-
-        pygame.quit()
 
     def localize_april_tag(self):
         if self.bot is not None:
@@ -301,9 +233,3 @@ class City:
         else:
             return -anticlockwise * 90
         
-
-
-
-# from city
-# self.bot.getLocation()
-# will return "First and Fourth"
