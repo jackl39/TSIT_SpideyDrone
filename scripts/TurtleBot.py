@@ -12,17 +12,8 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist, Pose
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
-import pygame
 import sys
 import time
-
-
-
-WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 1024
-GRID_WIDTH, GRID_HEIGHT = 3, 3
-TILE_SIZE = WINDOW_WIDTH // GRID_WIDTH
-X_DISTANCE = 0.75
-Y_DISTANCE = 0.65
 
 CAMERA_MATRIX = np.array([[503.038912, 0.00, 338.40326932],
                           [0.00, 499.01230583, 239.41331672],
@@ -57,13 +48,6 @@ class TurtleBot:
         self.distance = None
         self.intersection = None
         self.direction = None
-
-        # try:
-        #     droneImg = pygame.image.load('spider_bot.png').convert()
-        #     self.droneImg = pygame.transform.scale(droneImg, (TILE_SIZE, TILE_SIZE))
-        # except Exception as e:
-        #     print(f"Failed to load intersection_image: {e}")
-        #     sys.exit()
 
     def getTagID(self):
         return self.tag_id
@@ -207,14 +191,6 @@ class TurtleBot:
                 available_streets.append(angle)
         return available_streets
 
-    def avoid_collisions(self):
-        pass
-        # if self.minDist is not None:
-        #     if self.minDist < 0.1:
-        #         print("Collision avoidance")
-        #         self.set_speeds(0, 0, 0)
-        #         self.publish_cmd_vel()
-
     def Adress2Coords(self, val):
         mydic = {
             (0, 0): "First and First",
@@ -231,15 +207,3 @@ class TurtleBot:
         for key, value in mydic.items():
             if val == value:
                 return key
-
-    def draw(self, window, xyLoc):
-        xyLoc = self.Adress2Coords(self.intersection)
-        if xyLoc != None:
-            drone_pos = (int(xyLoc[0]) * TILE_SIZE + (TILE_SIZE-120) // 2, int(xyLoc[1]) * TILE_SIZE + (TILE_SIZE-120) // 2)
-            window.blit(self.droneImg, drone_pos)
-
-    # def attack(self, msg):
-    #     if msg == "Green Goblin":
-    #         self.rotate_by_angle(45)
-    #     elif msg == "Carnage":
-    #         self.rotate_by_angle(-45)
