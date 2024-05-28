@@ -5,8 +5,12 @@ import sys
 
 class Intersection:
     def __init__(self, street1, street2):
+        # Initialises the Intersection class. This sets up dictionaries to manage intersection names,
+        # neighboring intersections, and their associated streets. It also initialises status objects
+        # for managing the state of the intersection (safe, unsafe, goal).
         print("Intersection Initialised")
 
+        # Map pairs of streets to their corresponding intersection names
         self.streetsToIntersections = {
             ("1st St", "1st Ave"): "First and First", ("1st Ave", "1st St"): "First and First",
             ("1st St", "2nd Ave"): "First and Second", ("2nd Ave", "1st St"): "First and Second",
@@ -18,7 +22,8 @@ class Intersection:
             ("3rd St", "2nd Ave"): "Third and Second", ("2nd Ave", "3rd St"): "Third and Second",
             ("3rd St", "3rd Ave"): "Third and Third", ("3rd Ave", "3rd St"): "Third and Third"
         }
-
+        
+        # Dictionary to keep track of neighboring intersections for each intersection
         self.neighbouringIntersections = {
             "First and First": ["First and Second", "Second and First"],
             "Second and First": ["First and First", "Third and First"],
@@ -31,6 +36,7 @@ class Intersection:
             "Third and Third": ["Second and Third", "Third and Second"]
         }
 
+        # Maps intersection names back to the streets that form them
         self.streetNameFromIntersection = {
             "First and First" : ["1st St", "1st Ave"],
             "First and Second" : ["1st St", "2nd Ave"],
@@ -50,5 +56,6 @@ class Intersection:
         self.status = Status() 
 
     def update_status(self, new_status):
+        # Updates the status of the intersection if the new status is within the predefined status types.
         if new_status in [Status.SAFE, Status.UNSAFE, Status.GOAL]:
             self.status.state = new_status
