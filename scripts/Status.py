@@ -8,6 +8,7 @@ class Status:
     UNKNOWN = "Unknown"
 
     def __init__(self, state=UNKNOWN):
+        # Initialise a Status object with a default state of UNKNOWN unless specified otherwise.
         self.state = state
 
     def set_safe(self):
