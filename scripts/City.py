@@ -6,8 +6,6 @@ import math
 from std_msgs.msg import String
 from TurtleBot import TurtleBot
 from Map import Map
-from SpideyDrone import SpideyDrone
-from Drone2CNN import Drone2CNN
 from Intersection import Intersection, Status
 import threading
 
@@ -22,22 +20,12 @@ class City:
         print("City Initialised")
 
         # Initializing class variables
-        self.bot = None
-        self.drone = None
+        self.bot = TurtleBot()
 
         # ROS subscribers & publishers
         rospy.Subscriber("/gesture_result", String, self.gesture_callback)
         self.botLocationPub = rospy.Publisher("/Spiderman/Location", String, queue_size=1)
         self.droneLocationPub = rospy.Publisher("/SpideyDrone/location", String, queue_size=1)
-
-        # Conditional initialization of TurtleBot or SpideyDrone based on the demo type
-        if (DEMO == "TURTLEBOT"):
-            self.bot = TurtleBot()
-        elif (DEMO == "SPIDEYDRONE"):
-            self.drone = SpideyDrone()
-            self.villainFeedTransmitter = Drone2CNN()
-        else:
-            print("Demo type not set")
 
         # Initialize map and print it
         self.map = Map()
