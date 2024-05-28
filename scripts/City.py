@@ -5,22 +5,32 @@ import rospy
 import math
 from std_msgs.msg import String
 from TurtleBot import TurtleBot
-from Map import Map, GRID_WIDTH
+from Map import Map
 from SpideyDrone import SpideyDrone
 from Drone2CNN import Drone2CNN
 from Intersection import Intersection, Status
 import threading
 
-
+# Define the City class to manage the bot and drone in a city environment
 class City:
-
     def __init__(self):
+        # Initial setup for the City class. This function initialises the ROS publishers,
+        # sets up the bot or drone depending on the DEMO type, initialises the map,
+        # and subscribes to the ROS topic for gesture results.
+        
+        # Initialisation message
         print("City Initialised")
 
+        # Initializing class variables
         self.bot = None
         self.drone = None
+
+        # ROS subscribers & publishers
+        rospy.Subscriber("/gesture_result", String, self.gesture_callback)
         self.botLocationPub = rospy.Publisher("/Spiderman/Location", String, queue_size=1)
         self.droneLocationPub = rospy.Publisher("/SpideyDrone/location", String, queue_size=1)
+
+        # Conditional initialization of TurtleBot or SpideyDrone based on the demo type
         if (DEMO == "TURTLEBOT"):
             self.bot = TurtleBot()
         elif (DEMO == "SPIDEYDRONE"):
@@ -28,9 +38,12 @@ class City:
             self.villainFeedTransmitter = Drone2CNN()
         else:
             print("Demo type not set")
+
+        # Initialize map and print it
         self.map = Map()
         self.map.print_map()
 
+        # Direction mapping for bot movement
         self.direction_map = {
             0: "North", 1: "North", 2: "North",
             3: "East",  4: "East",  5: "East",
@@ -38,6 +51,7 @@ class City:
             9: "West", 10: "West", 11: "West"
         }
 
+        # Street naming and mapping to direction
         self.street_map = {
             0: "1st St", 8: "1st St",
             1: "2nd St", 7: "2nd St",
@@ -47,6 +61,7 @@ class City:
             5: "3rd Ave", 9: "3rd Ave"
         }
 
+        # Convert street names to numerical IDs for processing
         self.street_numbers = {
             "1st St" : 0,
             "2nd St" : 1,
@@ -56,6 +71,7 @@ class City:
             "3rd Ave" : 5
         }
 
+        # Define intersections based on street coordinates
         self.intersections = {
             (0, 3): "First and First", (3, 0): "First and First",
             (0, 4): "First and Second", (4, 0): "First and Second",
@@ -68,18 +84,7 @@ class City:
             (2, 5): "Third and Third", (5, 2): "Third and Third"
         }
 
-        self.intersectionsToDraw = {
-            "First and First" : [0, 0],
-            "First and Second" : [1, 0],
-            "First and Third" : [2, 0],
-            "Second and First" : [0, 1],
-            "Second and Second" : [1, 1],
-            "Second and Third" : [2, 1],
-            "Third and First" : [0, 2],
-            "Third and Second" : [1, 2],
-            "Third and Third" : [2, 2]
-        }
-
+        # Initialize state variables for tag detection and movement tracking
         self.lastTag = None
         self.bot.direction = None
         self.street = None
@@ -87,10 +92,12 @@ class City:
         self.last2Tags = []
         self.lastTime = None
 
-        rospy.Subscriber("/gesture_result", String, self.gesture_callback)
         rospy.spin()
 
     def gesture_callback(self, data):
+        # This function is called whenever a gesture result is published.
+        # It processes the gesture to determine the target intersection and controls the bot's movements
+        # to navigate toward the target, handling route calculation, bot rotation, and movement.
         try:
             # Extract street1 and street2 from gesture recognition result
             streets = data.data.split(" and ")
@@ -140,14 +147,19 @@ class City:
                 print("Exited Gracefully")
 
     def success_dance(self):
-                self.bot.set_speeds(0, 0, 100)
-                self.bot.rotate_by_angle(45)
-                self.bot.rotate_by_angle(-45)
-                self.bot.rotate_by_angle(45)
-                self.bot.rotate_by_angle(-45)
+        # This function makes the bot perform a celebratory dance by rotating back and forth.
+        # It is typically called when the bot successfully reaches the target or when the program exits gracefully.
+        self.bot.set_speeds(0, 0, 100)
+        self.bot.rotate_by_angle(45)
+        self.bot.rotate_by_angle(-45)
+        self.bot.rotate_by_angle(45)
+        self.bot.rotate_by_angle(-45)
 
 
     def localize_april_tag(self):
+        # This function is responsible for detecting April tags through the bot or drone's camera.
+        # It updates the bot's or drone's current position, direction, and the last two detected tags,
+        # as well as printing out relevant information about the tag and location.
         if self.bot is not None:
             tag_id = self.bot.getTagID()
         elif self.drone is not None:
@@ -193,8 +205,11 @@ class City:
 
         
     def determine_movement(self, curr_intersection, next_intersection):
-        #assuming x y coordinate system with streets
+        # This function calculates the required movement direction and rotation to navigate from the current
+        # intersection to the next intersection. It determines the necessary rotation based on the bot's
+        # current direction and the desired direction.
         #This will return the direction required for the next 
+        
         curr_coord = self.intersectionsToDraw.get(curr_intersection)
         next_coord = self.intersectionsToDraw.get(next_intersection)
         y_move = next_coord[0] - curr_coord[0]
